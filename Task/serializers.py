@@ -13,7 +13,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         model = Task
         fields = ['id', 'name', 'description', 'created_at', 'owner']
         read_only_fields = ['created_at']
-        # Overwrite validators attribute to turn off default UniqueConstaraint validator
+        # Overwrite validators attribute to turn off default UniqueConstraint validator
         validators = []
 
     def validate(self, data):
@@ -23,10 +23,11 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         return data
 
     def to_representation(self, instance):
-        repr = super().to_representation(instance)
+        """Customize the serialized representation for the Task model."""
+        representation = super().to_representation(instance)
         # Return owner field as a nested serialized object, not as an ID
-        repr['owner'] = UserSerializer(instance.owner).data
-        return repr
+        representation['owner'] = UserSerializer(instance.owner).data
+        return representation
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):
