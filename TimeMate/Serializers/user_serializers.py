@@ -1,4 +1,6 @@
+# Django imports
 from django.contrib.auth import get_user_model
+# DRF imports
 from rest_framework import serializers
 
 user = get_user_model()
