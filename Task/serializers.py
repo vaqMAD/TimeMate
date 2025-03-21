@@ -24,7 +24,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         repr = super().to_representation(instance)
-        # Return owner field as a nested serialized obcjet, not as a ID
+        # Return owner field as a nested serialized object, not as an ID
         repr['owner'] = UserSerializer(instance.owner).data
         return repr
 
