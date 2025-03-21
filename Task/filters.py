@@ -1,7 +1,5 @@
 # Django imports
 import django_filters
-# Internal imports
-from .models import Task
 
 
 class TaskFilter(django_filters.FilterSet):
