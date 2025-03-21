@@ -18,7 +18,6 @@ class TimeEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Descriptive metadata for constraints
         CONSTRAINT_DESCRIPTIONS = {
             "end_time_gt_start_time": "Value for `end_time` field must be after `start_time`.",
         }
