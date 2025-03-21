@@ -16,7 +16,7 @@ class Task(models.Model):
         validators=[MinLengthValidator(2), MaxLengthValidator(1000)],
         blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
 
     class Meta:
         constraints = [
