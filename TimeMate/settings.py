@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     # Internal apps
     'Task',
+    'TimeEntry',
 ]
 
 MIDDLEWARE = [
