@@ -20,7 +20,7 @@ class Task(models.Model):
 
     class Meta:
         constraints = [
-            # Applying uniquess validaton to the name and owner fields at the database level
+            # Applying uniqueness validation to the name and owner fields at the database level
             models.UniqueConstraint(fields=['name', 'owner'], name='unique_task_name_per_owner'),
         ]
 
