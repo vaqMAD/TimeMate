@@ -23,6 +23,12 @@ class Task(models.Model):
             # Applying uniquess validaton to the name and owner fields at the database level
             models.UniqueConstraint(fields=['name', 'owner'], name='unique_task_name_per_owner'),
         ]
+
+        indexes = [
+            models.Index(fields=['owner']),
+            models.Index(fields=['name'])
+        ]
+
         ordering = ['name']
 
     def __str__(self):
