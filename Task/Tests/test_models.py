@@ -21,8 +21,8 @@ class TaskModelTest(TestCase):
         Uniqueness is enforced at the database level; therefore, full_clean()
         might not catch the error, so we check for an IntegrityError on saving.
         """
-        Task.objects.create(owner=self.user, name='Test', description='Opis 1')
-        duplicate_task = Task(owner=self.user, name='Test', description='Opis 2')
+        Task.objects.create(owner=self.user, name='Test', description='Description 1')
+        duplicate_task = Task(owner=self.user, name='Test', description='Description 2')
 
         with self.assertRaises(IntegrityError):
             duplicate_task.save()
@@ -31,7 +31,7 @@ class TaskModelTest(TestCase):
         """
         Verify that tasks with the same name are allowed for different users.
         """
-        task1 = Task.objects.create(owner=self.user, name='Test', description='Opis 1')
-        task2 = Task.objects.create(owner=self.other_user, name='Test', description='Opis 2')
+        task1 = Task.objects.create(owner=self.user, name='Test', description='Description 1')
+        task2 = Task.objects.create(owner=self.other_user, name='Test', description='Description 2')
 
         self.assertEqual(task1.name, task2.name)

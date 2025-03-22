@@ -54,7 +54,7 @@ class TaskSerializerTest(TestCase):
         # Create first Task
         Task.objects.create(**self.valid_data, owner=self.user)
 
-        # Prepare dulicated data,
+        # Prepare duplicated data,
         duplicate_data = {'name': 'Test Task'}
 
         # Check is validation running correctly
