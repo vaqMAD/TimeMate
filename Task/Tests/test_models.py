@@ -15,6 +15,15 @@ class TaskModelTest(TestCase):
         self.user = User.objects.create_user(username='user1', password='<PASSWORD>', email='<EMAIL>')
         self.other_user = User.objects.create_user(username='user2', password='<PASSWORD>', email='<EMAIL>')
 
+    def test_task_creation_with_valid_data(self):
+        """
+        Ensure that a Task object is successfully created when provided with valid data.
+        """
+        task = Task.objects.create(owner=self.user, name='Sample Task', description='This is a test task.')
+        self.assertEqual(task.name, 'Sample Task')
+        self.assertEqual(task.description, 'This is a test task.')
+        self.assertEqual(task.owner, self.user)
+
     def test_unique_task_name_per_owner(self):
         """
         Verify that a user cannot create two tasks with the same name.
