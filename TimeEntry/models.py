@@ -18,15 +18,13 @@ class TimeEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        CONSTRAINT_DESCRIPTIONS = {
-            "end_time_gt_start_time": "Value for `end_time` field must be after `start_time`.",
-        }
 
         constraints = [
             # Ensures that the value of the `end_time` field is greater than the value of the `start_time` field.
             models.CheckConstraint(
                 check=models.Q(end_time__gt=models.F('start_time')),
-                name='end_time_gt_start_time'
+                name='end_time_gt_start_time',
+                violation_error_message="Value for `end_time` field must be after `start_time`."
             )
         ]
 
@@ -37,7 +35,7 @@ class TimeEntry(models.Model):
             models.Index(fields=['end_time']),
         ]
 
-        ordering = ['name', '-start_time']
+        ordering = ['-start_time']
 
     def __str__(self):
         return f"TimeEntry for {self.task.name} ({self.start_time} - {self.end_time})"

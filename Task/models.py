@@ -19,13 +19,12 @@ class Task(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
 
     class Meta:
-        CONSTRAINT_DESCRIPTIONS = {
-            "unique_task_name_per_owner": "Ensures that each task name is unique per owner."
-        }
 
         constraints = [
             # Ensures that the combination of `name` and `owner` fields is unique at the database level.
-            models.UniqueConstraint(fields=['name', 'owner'], name='unique_task_name_per_owner'),
+            models.UniqueConstraint(fields=['name', 'owner'],
+                                    name='unique_task_name_per_owner',
+                                    violation_error_message="Task name must be unique per owner."),
         ]
 
         indexes = [
