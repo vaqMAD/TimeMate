@@ -4,9 +4,10 @@ from rest_framework import serializers
 from .models import Task
 from TimeMate.Serializers.user_serializers import UserSerializer
 from .validators import unique_owner_for_task_name
+from TimeMate.Utils.mixins import OwnerRepresentationMixin
 
 
-class TaskCreateSerializer(serializers.ModelSerializer):
+class TaskCreateSerializer(OwnerRepresentationMixin, serializers.ModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -21,13 +22,6 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         # Calling custom validator
         unique_owner_for_task_name(data['owner'], data.get('name'))
         return data
-
-    def to_representation(self, instance):
-        """Customize the serialized representation for the Task model."""
-        representation = super().to_representation(instance)
-        # Return owner field as a nested serialized object, not as an ID
-        representation['owner'] = UserSerializer(instance.owner).data
-        return representation
 
 
 class TaskDetailSerializer(serializers.ModelSerializer):
@@ -58,7 +52,7 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         # In update operations, validate the 'name' field only if it has changed.
-        if self.instance and value != self.instance.name:
+        if self.instance and value != self.instance.name :
             # Check correctness of the new data by unique_owner_for_task_name
             unique_owner_for_task_name(self.instance.owner, value)
         return value
