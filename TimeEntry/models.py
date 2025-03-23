@@ -18,7 +18,7 @@ class TimeEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-
+        verbose_name_plural = "Time entries"
         constraints = [
             # Ensures that the value of the `end_time` field is greater than the value of the `start_time` field.
             models.CheckConstraint(
