@@ -1,3 +1,6 @@
+# Django imports
 from django.contrib import admin
+# Internal imports
+from .models import TimeEntry
 
-# Register your models here.
+admin.site.register(TimeEntry)

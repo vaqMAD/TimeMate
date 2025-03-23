@@ -52,7 +52,7 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         # In update operations, validate the 'name' field only if it has changed.
-        if self.instance and value != self.instance.name :
+        if self.instance and value != self.instance.name:
             # Check correctness of the new data by unique_owner_for_task_name
             unique_owner_for_task_name(self.instance.owner, value)
         return value
