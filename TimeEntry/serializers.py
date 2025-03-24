@@ -5,6 +5,7 @@ from rest_framework import serializers
 # Internal imports
 from .models import TimeEntry
 from Task.models import Task
+from Task.serializers import TaskListSerializer
 from TimeMate.Utils.mixins import OwnerRepresentationMixin
 from .validators import validate_start_and_end_time
 
