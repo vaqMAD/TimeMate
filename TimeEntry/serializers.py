@@ -5,6 +5,7 @@ from rest_framework import serializers
 # Internal imports
 from .models import TimeEntry
 from Task.models import Task
+from Task.serializers import TaskListSerializer
 from TimeMate.Utils.mixins import OwnerRepresentationMixin
 from .validators import validate_start_and_end_time
 
@@ -34,3 +35,11 @@ class TimeEntryCreateSerializer(OwnerRepresentationMixin, serializers.ModelSeria
         if task.owner != self.context['request'].user:
             raise serializers.ValidationError("You do not have permission to use this task.")
         return value
+
+# TODO [InProgress] : add `detail_url` field.
+class TimeEntryListSerializer(serializers.ModelSerializer):
+    task = TaskListSerializer(read_only=True)
+
+    class Meta:
+        model = TimeEntry
+        fields = ['id', 'task', 'start_time', 'end_time']
