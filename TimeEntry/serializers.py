@@ -36,6 +36,7 @@ class TimeEntryCreateSerializer(OwnerRepresentationMixin, serializers.ModelSeria
             raise serializers.ValidationError("You do not have permission to use this task.")
         return value
 
+
 # TODO [InProgress] : add `detail_url` field.
 class TimeEntryListSerializer(serializers.ModelSerializer):
     task = TaskListSerializer(read_only=True)
