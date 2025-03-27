@@ -4,6 +4,7 @@ from rest_framework import generics
 from .models import TimeEntry
 from .serializers import TimeEntryCreateSerializer, TimeEntryListSerializer
 
+
 # TODO [InProgress] : Check structure of the code, whether it meets Django standards
 # TODO [InProgress] : Add  unit and integration tests for both GET and POST views.
 # TODO [InProgress] : Think about whether structure of the GET response is appropriate.
@@ -14,14 +15,5 @@ class TimeEntryListCreateView(generics.ListCreateAPIView):
             return TimeEntryCreateSerializer
         return TimeEntryListSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        # Pass request and user to the serializer context
-        context["request"] = self.request
-        return context
-
     def get_queryset(self):
         return TimeEntry.objects.filter(owner=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
