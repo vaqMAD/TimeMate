@@ -13,12 +13,6 @@ from .filters import TaskFilter
 class TaskCreateView(generics.CreateAPIView):
     serializer_class = TaskCreateSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        # Pass request and user to the serializer context
-        context["request"] = self.request
-        return context
-
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsObjectOwner]
@@ -27,12 +21,6 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         pk = self.kwargs.get("pk")
         return Task.objects.filter(pk=pk)
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        # Pass request and user to the serializer context
-        context["request"] = self.request
-        return context
 
     def get_serializer_class(self):
         if self.request.method in ('PUT', 'PATCH'):
