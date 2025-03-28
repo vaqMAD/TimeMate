@@ -6,7 +6,7 @@ from rest_framework.filters import OrderingFilter
 from .models import Task
 from .serializers import TaskCreateSerializer, TaskDetailSerializer, TaskListSerializer, TaskUpdateSerializer
 from TimeMate.Permissions.owner_permissions import IsObjectOwner
-from .pagination import TaskPagination
+from TimeMate.Utils.pagination import DefaultPagination
 from .filters import TaskFilter
 
 
@@ -31,7 +31,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
 class TaskListView(generics.ListAPIView):
     permission_classes = [IsObjectOwner]
     serializer_class = TaskListSerializer
-    pagination_class = TaskPagination
+    pagination_class = DefaultPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = TaskFilter
     ordering_fields = ['created_at', 'name']
