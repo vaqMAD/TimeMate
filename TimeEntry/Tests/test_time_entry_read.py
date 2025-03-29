@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+from rest_framework import status
 # DRF Imports
 from rest_framework.test import APITestCase
 # Internal imports
@@ -14,7 +15,6 @@ User = get_user_model()
 
 
 class TimeEntryListTests(APITestCase):
-
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
         self.other_user = User.objects.create_user(username='otheruser', email='<EMAIL>', password='<PASSWORD>')
@@ -48,7 +48,7 @@ class TimeEntryListTests(APITestCase):
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 5)
 
         returned_task_ids = {entry['id'] for entry in response.data['results']}
@@ -66,7 +66,7 @@ class TimeEntryListTests(APITestCase):
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 5)
         returned_ids = {entry['id'] for entry in response.data['results']}
         self.assertNotIn(str(self.other_time_entry.id), returned_ids)
@@ -77,5 +77,5 @@ class TimeEntryListTests(APITestCase):
         """
         self.client.force_authenticate(user=self.no_data_user)
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 0)
