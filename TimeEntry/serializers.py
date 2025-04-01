@@ -40,7 +40,16 @@ class TimeEntryCreateSerializer(OwnerRepresentationMixin, serializers.ModelSeria
 # TODO [InProgress] : add `detail_url` field.
 class TimeEntryListSerializer(serializers.ModelSerializer):
     task = TaskListSerializer(read_only=True)
+    detail_url = serializers.HyperlinkedIdentityField(read_only=True, view_name='time_entry_detail')
 
     class Meta:
         model = TimeEntry
-        fields = ['id', 'task', 'start_time', 'end_time']
+        fields = ['id', 'task', 'start_time', 'end_time', 'detail_url']
+
+
+class TimeEntryDetailSerializer(OwnerRepresentationMixin, serializers.ModelSerializer):
+    task = TaskListSerializer(read_only=True)
+
+    class Meta:
+        model = TimeEntry
+        fields = ['id', 'task', 'start_time', 'end_time', 'owner', 'created_at']
