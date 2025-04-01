@@ -17,6 +17,7 @@ User = get_user_model()
 class TimeEntryCreateTests(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
+        self.other_user = User.objects.create_user(username='otheruser', email='<EMAIL>', password='<PASSWORD>')
         self.task = Task.objects.create(name='Test Task', owner=self.user)
         self.time_entry_sample_object = TimeEntry.objects.create(
             task=self.task,
@@ -44,6 +45,7 @@ class TimeEntryCreateTests(APITestCase):
             self.task.id
         )
         self.assertEqual(TimeEntry.objects.count(), 2)
+        self.assertEqual(response.data['owner']['username'], self.user.username)
 
     def test_time_entry_with_equal_start_and_end_times(self):
         """
@@ -94,3 +96,18 @@ class TimeEntryCreateTests(APITestCase):
         response = self.client.post(self.url, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['owner']['username'], self.user.username)
+
+    def test_create_time_entry_for_task_not_owned_by_user(self):
+        """
+        Ensure that creating a time entry for a task not owned by the current user returns a 400 error.
+        """
+        other_task = Task.objects.create(name='Other Task', owner=self.other_user)
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'task': other_task.id,
+            'start_time': timezone.now().isoformat(),
+            'end_time': (timezone.now() + timedelta(hours=1)).isoformat(),
+        }
+        response = self.client.post(self.url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("You do not have permission to use this task.", str(response.data))
