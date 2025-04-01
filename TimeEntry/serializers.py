@@ -37,7 +37,6 @@ class TimeEntryCreateSerializer(OwnerRepresentationMixin, serializers.ModelSeria
         return value
 
 
-# TODO [InProgress] : add `detail_url` field.
 class TimeEntryListSerializer(serializers.ModelSerializer):
     task = TaskListSerializer(read_only=True)
     detail_url = serializers.HyperlinkedIdentityField(read_only=True, view_name='time_entry_detail')
