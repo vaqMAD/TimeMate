@@ -24,9 +24,7 @@ class TaskCreateSerializer(OwnerRepresentationMixin, serializers.ModelSerializer
         return data
 
 
-class TaskDetailSerializer(serializers.ModelSerializer):
-    owner = UserSerializer(read_only=True)
-
+class TaskDetailSerializer(OwnerRepresentationMixin, serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'name', 'description', 'created_at', 'owner']
