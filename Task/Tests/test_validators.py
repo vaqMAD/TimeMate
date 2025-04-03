@@ -1,3 +1,5 @@
+# Python imports
+import uuid
 # Django Imports
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -5,7 +7,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.serializers import ValidationError
 # Internal imports
 from Task.models import Task
-from Task.validators import unique_owner_for_task_name
+from Task.validators import unique_owner_for_task_name, get_task_or_raise, validate_task_ownership
 
 User = get_user_model()
 
@@ -42,3 +44,68 @@ class UniqueOwnerForTaskNameValidatorTests(TestCase):
         # Verify that the error message contains the task name and user's username.
         self.assertIn(self.task_name, error_msg)
         self.assertIn(self.user.username, error_msg)
+
+
+class GetTaskOrRaiseValidatorTests(TestCase):
+    def setUp(self):
+        # User objects related set up
+        self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
+        # Setup task
+        self.task = Task.objects.create(name='Test Task', owner=self.user)
+
+    def test_get_task_or_raise_valid_task(self):
+        """
+        Ensure that get_task_or_raise returns the correct task when the task ID exists.
+        """
+
+        fetched_task = get_task_or_raise(self.task.id)
+        self.assertEqual(fetched_task, self.task)
+
+    def test_get_task_or_raise_invalid_task(self):
+        """
+        Ensure that get_task_or_raise raises an error when the task ID does not exist.
+        """
+
+        invalid_task_id = uuid.uuid4()
+        with self.assertRaises(ValidationError) as context:
+            get_task_or_raise(invalid_task_id)
+
+        error_msg = context.exception.detail[0]
+        self.assertEqual(error_msg, 'Task with given id does not exist')
+
+
+class ValidateTaskOwnershipTests(TestCase):
+    def setUp(self):
+        # User objects related set up
+        self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
+        self.not_owner_user = User.objects.create_user(username='not_owner', email='<EMAIL>', password='<PASSWORD>')
+        # Data set up
+        self.task = Task.objects.create(name='Test Task', owner=self.user)
+
+    def test_validate_task_ownership_success(self):
+        """
+        Ensure validate_task_ownership returns None when the task is owned by the user.
+        """
+        fetched_task = validate_task_ownership(self.task, self.user)
+        self.assertEqual(fetched_task, self.task)
+
+    def test_validate_task_ownership_failure(self):
+        """
+        Ensure validate_task_ownership raises ValidationError when the task is not owned by the user.
+        """
+        with self.assertRaises(ValidationError) as context:
+            validate_task_ownership(self.task, self.not_owner_user)
+
+        error_msg = context.exception.detail[0]
+        self.assertEqual(error_msg, 'You do not have permission to access this task')
+
+    def test_validate_task_ownership_invalid_task(self):
+        """
+        Ensures validate_task_ownership raises ValidationError when the task ID does not exist.
+        """
+        invalid_task_id = uuid.uuid4()
+        with self.assertRaises(ValidationError) as context:
+            validate_task_ownership(invalid_task_id, self.user)
+
+        error_msg = context.exception.detail[0]
+        self.assertEqual(error_msg, 'Task with given id does not exist')
