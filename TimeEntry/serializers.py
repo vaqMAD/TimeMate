@@ -8,6 +8,7 @@ from Task.models import Task
 from Task.serializers import TaskListSerializer
 from TimeMate.Utils.mixins import OwnerRepresentationMixin
 from .validators import validate_start_and_end_time
+from Task.validators import validate_task_ownership
 
 
 class TimeEntryCreateSerializer(OwnerRepresentationMixin, serializers.ModelSerializer):
@@ -25,16 +26,12 @@ class TimeEntryCreateSerializer(OwnerRepresentationMixin, serializers.ModelSeria
         start_time = data.get('start_time')
         end_time = data.get('end_time')
         # Calling custom validator
-        validate_start_and_end_time(start_time, end_time)
+        if start_time and end_time:
+            validate_start_and_end_time(start_time, end_time)
         return data
 
     def validate_task(self, value):
-        # Ensures Task by given UUID exists
-        task = get_object_or_404(Task, pk=value.id)
-        # Check is user, owner of this task
-        if task.owner != self.context['request'].user:
-            raise serializers.ValidationError("You do not have permission to use this task.")
-        return value
+        return validate_task_ownership(self.context['request'].user, value)
 
 
 class TimeEntryListSerializer(serializers.ModelSerializer):
@@ -52,3 +49,23 @@ class TimeEntryDetailSerializer(OwnerRepresentationMixin, serializers.ModelSeria
     class Meta:
         model = TimeEntry
         fields = ['id', 'task', 'start_time', 'end_time', 'owner', 'created_at']
+
+
+class TimeEntryUpdateSerializer(serializers.ModelSerializer):
+    owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = TimeEntry
+        fields = ['id', 'task', 'start_time', 'end_time', 'owner']
+
+    def validate(self, data):
+        data = super().validate(data)
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+
+        if start_time and end_time:
+            validate_start_and_end_time(start_time, end_time)
+        return data
+
+    def validate_task(self, value):
+        return validate_task_ownership(self.context['request'].user, value)
