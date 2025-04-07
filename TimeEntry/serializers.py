@@ -60,9 +60,10 @@ class TimeEntryUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data = super().validate(data)
+        # Get necessary values
         start_time = data.get('start_time')
         end_time = data.get('end_time')
-
+        # Calling custom validator
         if start_time and end_time:
             validate_start_and_end_time(start_time, end_time)
         return data
