@@ -1,4 +1,5 @@
 # Django imports
+from django.utils.dateparse import parse_datetime
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 # DRF imports
@@ -44,8 +45,13 @@ class TimeEntryUpdateTests(APITestCase):
         response = self.client.patch(self.detail_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.time_entry.refresh_from_db()
-        self.assertEqual(self.time_entry.start_time.isoformat(), payload['start_time'].replace('Z', '+00:00'))
-        self.assertEqual(self.time_entry.end_time.isoformat(), payload['end_time'].replace('Z', '+00:00'))
+
+        # Parse payload datetimes to compare with the values from the database.
+        expected_start_time = parse_datetime(payload['start_time'])
+        expected_end_time = parse_datetime(payload['end_time'])
+
+        self.assertEqual(self.time_entry.start_time, expected_start_time)
+        self.assertEqual(self.time_entry.end_time, expected_end_time)
 
     def test_update_time_entry_invalid_times(self):
         """
@@ -58,8 +64,11 @@ class TimeEntryUpdateTests(APITestCase):
             "end_time": "2025-10-01T09:00:00Z"
         }
         response = self.client.patch(self.detail_url, payload, format="json")
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("must be greater", str(response.data['non_field_errors'][0]))
+        self.assertIn('non_field_errors', response.data)
+        error_message = response.data['non_field_errors'][0]
+        self.assertEqual(error_message.code, 'invalid_time_range')
 
     def test_update_time_entry_non_owner(self):
         """
@@ -84,6 +93,7 @@ class TimeEntryUpdateTests(APITestCase):
             "owner": self.other_user.id
         }
         response = self.client.patch(self.detail_url, payload, format="json")
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.time_entry.refresh_from_db()
         # Ensure the owner has not changed
