@@ -6,6 +6,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 # Internal imports
 from Task.models import Task
+from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME
+from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 
 User = get_user_model()
 
@@ -51,7 +53,8 @@ class TaskUpdateTests(APITestCase):
         response = self.client.patch(self.detail_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("already has an object", str(response.data))
+        error_detail = response.data['name'][0]
+        self.assertEqual(error_detail.code, VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
 
     def test_update_task_non_owner(self):
         """
@@ -65,8 +68,8 @@ class TaskUpdateTests(APITestCase):
         response = self.client.patch(self.detail_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.task.refresh_from_db()
-        self.assertEqual(self.task.name, "Test Task")
+        error_detail = response.data['detail']
+        self.assertEqual(error_detail.code, PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
 
     def test_update_owner_field_ignored(self):
         """
