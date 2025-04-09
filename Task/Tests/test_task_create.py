@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 # DRF imports
 from rest_framework import status
 from rest_framework.test import APITestCase
+from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME
 
 User = get_user_model()
 
@@ -51,6 +52,9 @@ class TaskCreateViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # Expect a validation error (non_field_errors) due to duplicate task name.
         self.assertIn('non_field_errors', response.data)
+        errors = response.data['non_field_errors']
+        error_code = errors[0].code
+        self.assertEqual(error_code, VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
 
     def test_owner_field_is_ignored_in_input(self):
         """
