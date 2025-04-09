@@ -1,5 +1,7 @@
-# Django imports
-from django.shortcuts import get_object_or_404
+# Validators error codes
+VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME = "unique_task_name"
+VALIDATION_ERROR_CODE_TASK_NOT_FOUND = "task_not_found"
+VALIDATION_ERROR_CODE_TASK_INVALID_OWNER = "task_invalid_owner"
 # DRF imports
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -25,7 +27,8 @@ def unique_owner_for_task_name(owner, task_name):
     """
     if Task.objects.filter(owner=owner, name=task_name).exists():
         raise serializers.ValidationError(
-            f"This user: {owner.username}, already has an object with the same name: {task_name}"
+            f"This user: {owner.username}, already has an object with the same name: {task_name}",
+            code=VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME
         )
 
 
@@ -39,7 +42,7 @@ def get_task_or_raise(task_value):
 
     :param task_value: The task input, which can either be a Task instance or
         an ID corresponding to a Task object.
-    :type task_value: Task | int
+    :type task_value: Task | UUID
 
     :return: A Task instance resolved from either the provided ID or the task
         instance itself.
@@ -54,7 +57,10 @@ def get_task_or_raise(task_value):
     try:
         task = Task.objects.get(id=task_value)
     except Task.DoesNotExist:
-        raise serializers.ValidationError("Task with given id does not exist")
+        raise serializers.ValidationError(
+            "Task with given id does not exist",
+            code=VALIDATION_ERROR_CODE_TASK_NOT_FOUND
+        )
     return task
 
 
@@ -70,7 +76,7 @@ def validate_task_ownership(task_value, user):
 
     :param task_value: The task input, which can either be a Task instance or
         an ID corresponding to a Task object.
-    :type task_value: Task | int
+    :type task_value: Task | UUID
     :param user: The user attempting to access the task
     :type user: Any relevant user object type
     :return: The validated task object
@@ -82,6 +88,9 @@ def validate_task_ownership(task_value, user):
     task = get_task_or_raise(task_value)
 
     if task.owner != user:
-        raise ValidationError("You do not have permission to access this task")
+        raise ValidationError(
+            "You do not have permission to access this task",
+            code=VALIDATION_ERROR_CODE_TASK_INVALID_OWNER
+        )
 
     return task
