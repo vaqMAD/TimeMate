@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 # Internal imports
 from Task.models import Task
+from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 
 User = get_user_model()
 
@@ -42,3 +43,5 @@ class TaskDeleteTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Task.objects.filter(id=self.task.id).exists())
+        detail = response.data.get("detail")
+        self.assertEqual(detail.code, PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
