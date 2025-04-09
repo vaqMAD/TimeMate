@@ -7,6 +7,7 @@ from rest_framework.test import APIRequestFactory
 # Internal imports
 from Task.models import Task
 from Task.serializers import TaskCreateSerializer, TaskDetailSerializer, TaskListSerializer
+from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME
 
 User = get_user_model()
 
@@ -63,9 +64,10 @@ class TaskSerializerTest(TestCase):
             serializer.is_valid(raise_exception=True)
 
         # Check error msg
-        error_msg = str(context.exception)
-        self.assertIn(self.user.username, error_msg)
-        self.assertIn(duplicate_data['name'], error_msg)
+        errors = context.exception.detail.get('non_field_errors')
+        self.assertEqual(errors[0].code, VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
+        self.assertIn(self.user.username, str(errors))
+        self.assertIn(duplicate_data['name'], str(errors))
 
     def test_check_correct_formatting(self):
         """
