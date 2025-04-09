@@ -8,6 +8,7 @@ from rest_framework.serializers import ValidationError
 # Internal imports
 from Task.models import Task
 from Task.validators import unique_owner_for_task_name, get_task_or_raise, validate_task_ownership
+from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME, VALIDATION_ERROR_CODE_TASK_NOT_FOUND, VALIDATION_ERROR_CODE_TASK_INVALID_OWNER
 
 User = get_user_model()
 
@@ -44,6 +45,7 @@ class UniqueOwnerForTaskNameValidatorTests(TestCase):
         # Verify that the error message contains the task name and user's username.
         self.assertIn(self.task_name, error_msg)
         self.assertIn(self.user.username, error_msg)
+        self.assertEqual(context.exception.detail[0].code, VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
 
 
 class GetTaskOrRaiseValidatorTests(TestCase):
@@ -57,7 +59,6 @@ class GetTaskOrRaiseValidatorTests(TestCase):
         """
         Ensure that get_task_or_raise returns the correct task when the task ID exists.
         """
-
         fetched_task = get_task_or_raise(self.task.id)
         self.assertEqual(fetched_task, self.task)
 
@@ -65,13 +66,12 @@ class GetTaskOrRaiseValidatorTests(TestCase):
         """
         Ensure that get_task_or_raise raises an error when the task ID does not exist.
         """
-
         invalid_task_id = uuid.uuid4()
         with self.assertRaises(ValidationError) as context:
             get_task_or_raise(invalid_task_id)
 
         error_msg = context.exception.detail[0]
-        self.assertEqual(error_msg, 'Task with given id does not exist')
+        self.assertEqual(error_msg.code, VALIDATION_ERROR_CODE_TASK_NOT_FOUND)
 
 
 class ValidateTaskOwnershipTests(TestCase):
@@ -97,7 +97,7 @@ class ValidateTaskOwnershipTests(TestCase):
             validate_task_ownership(self.task, self.not_owner_user)
 
         error_msg = context.exception.detail[0]
-        self.assertEqual(error_msg, 'You do not have permission to access this task')
+        self.assertEqual(error_msg.code, VALIDATION_ERROR_CODE_TASK_INVALID_OWNER)
 
     def test_validate_task_ownership_invalid_task(self):
         """
@@ -108,4 +108,4 @@ class ValidateTaskOwnershipTests(TestCase):
             validate_task_ownership(invalid_task_id, self.user)
 
         error_msg = context.exception.detail[0]
-        self.assertEqual(error_msg, 'Task with given id does not exist')
+        self.assertEqual(error_msg.code, VALIDATION_ERROR_CODE_TASK_NOT_FOUND)
