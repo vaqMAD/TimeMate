@@ -8,9 +8,11 @@ from django.utils.timezone import now
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 # Internal Imports
+from TimeMate.Utils.utils import get_error_code
 from Task.models import Task
 from TimeEntry.models import TimeEntry
 from TimeEntry.serializers import TimeEntryCreateSerializer, TimeEntryListSerializer
+from TimeEntry.validators import VALIDATION_ERROR_CODE_INVALID_TIME_RANGE
 
 User = get_user_model()
 
@@ -64,8 +66,11 @@ class TimeEntryCreateSerializerTests(TestCase):
         invalid_data['start_time'] = invalid_data['end_time']
         serializer = TimeEntryCreateSerializer(data=invalid_data, context=self.context)
         # Expect a ValidationError due to invalid time range.
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValidationError) as context_manager:
             serializer.is_valid(raise_exception=True)
+
+        errors = context_manager.exception.detail['non_field_errors']
+        self.assertEqual(get_error_code(errors), VALIDATION_ERROR_CODE_INVALID_TIME_RANGE)
 
     def test_start_time_after_end_time(self):
         """
@@ -75,8 +80,11 @@ class TimeEntryCreateSerializerTests(TestCase):
         invalid_data['start_time'] = invalid_data['end_time'] + timedelta(hours=1)
         serializer = TimeEntryCreateSerializer(data=invalid_data, context=self.context)
         # Expect a ValidationError because start_time is later than end_time.
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValidationError) as context_manager:
             serializer.is_valid(raise_exception=True)
+
+        errors = context_manager.exception.detail['non_field_errors']
+        self.assertEqual(get_error_code(errors), VALIDATION_ERROR_CODE_INVALID_TIME_RANGE)
 
     def test_missing_required_fields(self):
         """
