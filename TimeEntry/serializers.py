@@ -31,7 +31,7 @@ class TimeEntryCreateSerializer(OwnerRepresentationMixin, serializers.ModelSeria
         return data
 
     def validate_task(self, value):
-        return validate_task_ownership(self.context['request'].user, value)
+        return validate_task_ownership(value, self.context['request'].user)
 
 
 class TimeEntryListSerializer(serializers.ModelSerializer):
@@ -69,4 +69,4 @@ class TimeEntryUpdateSerializer(serializers.ModelSerializer):
         return data
 
     def validate_task(self, value):
-        return validate_task_ownership(self.context['request'].user, value)
+        return validate_task_ownership(value, self.context['request'].user)
