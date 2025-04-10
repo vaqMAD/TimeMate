@@ -12,6 +12,7 @@ from TimeEntry.models import TimeEntry
 User = get_user_model()
 
 
+# TODO [REFACTOR] : Refactor code after changes in validation codes
 class TimeEntryUpdateTests(APITestCase):
     def setUp(self):
         # Set up user objects for testing
@@ -76,8 +77,8 @@ class TimeEntryUpdateTests(APITestCase):
         """
         self.client.force_authenticate(user=self.other_user)
         payload = {
-            "start_time": "2023-10-01T10:30:00Z",
-            "end_time": "2023-10-01T11:30:00Z"
+            "start_time": "2025-10-01T10:30:00Z",
+            "end_time": "2025-10-01T11:30:00Z"
         }
         response = self.client.patch(self.detail_url, payload, format="json")
 

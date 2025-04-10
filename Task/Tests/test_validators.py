@@ -6,9 +6,11 @@ from django.contrib.auth import get_user_model
 # DRF imports
 from rest_framework.serializers import ValidationError
 # Internal imports
+from TimeMate.Utils.utils import get_error_code
 from Task.models import Task
 from Task.validators import unique_owner_for_task_name, get_task_or_raise, validate_task_ownership
-from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME, VALIDATION_ERROR_CODE_TASK_NOT_FOUND, VALIDATION_ERROR_CODE_TASK_INVALID_OWNER
+from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME, VALIDATION_ERROR_CODE_TASK_NOT_FOUND, \
+    VALIDATION_ERROR_CODE_TASK_INVALID_OWNER
 
 User = get_user_model()
 
@@ -41,11 +43,10 @@ class UniqueOwnerForTaskNameValidatorTests(TestCase):
             # Call validation when the task exists.
             unique_owner_for_task_name(self.user, self.task_name)
 
-        error_msg = str(context.exception)
-        # Verify that the error message contains the task name and user's username.
-        self.assertIn(self.task_name, error_msg)
-        self.assertIn(self.user.username, error_msg)
-        self.assertEqual(context.exception.detail[0].code, VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
+        errors = context.exception.detail
+        self.assertEqual(get_error_code(errors), VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
+        self.assertIn(self.task_name, str(errors))
+        self.assertIn(self.user.username, str(errors))
 
 
 class GetTaskOrRaiseValidatorTests(TestCase):

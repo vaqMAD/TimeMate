@@ -8,6 +8,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 # Internal imports
+from TimeMate.Utils.utils import get_error_code
 from Task.models import Task
 from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 
@@ -61,8 +62,8 @@ class TaskDetailViewTests(APITestCase):
 
         # Expect a 403 Forbidden response.
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        error_detail = response.data.get("detail")
-        self.assertEqual(error_detail.code, PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
+        error_detail = response.data['detail']
+        self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
 
 
 class TaskListViewTests(APITestCase):

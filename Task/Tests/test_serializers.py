@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 # Internal imports
+from TimeMate.Utils.utils import get_error_code
 from Task.models import Task
 from Task.serializers import TaskCreateSerializer, TaskDetailSerializer, TaskListSerializer
 from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME
@@ -64,8 +65,8 @@ class TaskSerializerTest(TestCase):
             serializer.is_valid(raise_exception=True)
 
         # Check error msg
-        errors = context.exception.detail.get('non_field_errors')
-        self.assertEqual(errors[0].code, VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
+        errors = context.exception.detail['non_field_errors']
+        self.assertEqual(get_error_code(errors), VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME)
         self.assertIn(self.user.username, str(errors))
         self.assertIn(duplicate_data['name'], str(errors))
 
