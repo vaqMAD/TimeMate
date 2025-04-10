@@ -6,8 +6,11 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 # Internal imports
+from TimeMate.Utils.utils import get_error_code
 from Task.models import Task
 from TimeEntry.models import TimeEntry
+from TimeEntry.validators import VALIDATION_ERROR_CODE_INVALID_TIME_RANGE
+from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 
 User = get_user_model()
 
@@ -68,8 +71,8 @@ class TimeEntryUpdateTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('non_field_errors', response.data)
-        error_message = response.data['non_field_errors'][0]
-        self.assertEqual(error_message.code, 'invalid_time_range')
+        error_message = response.data['non_field_errors']
+        self.assertEqual(get_error_code(error_message), VALIDATION_ERROR_CODE_INVALID_TIME_RANGE)
 
     def test_update_time_entry_non_owner(self):
         """
@@ -83,6 +86,9 @@ class TimeEntryUpdateTests(APITestCase):
         response = self.client.patch(self.detail_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        error_detail = response.data['detail']
+        self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
+
 
     def test_update_protected_fields(self):
         """

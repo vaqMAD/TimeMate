@@ -38,9 +38,11 @@ class TimeEntryListTests(APITestCase):
             )
         # Objects for different user which should not be returned
         self.other_task = Task.objects.create(name='Other Task', owner=self.other_user)
-        self.other_time_entry = TimeEntry.objects.create(task=self.other_task, owner=self.other_user,
-                                                         start_time=timezone.now(),
-                                                         end_time=timezone.now() + timedelta(hours=1))
+        self.other_time_entry = TimeEntry.objects.create(
+            task=self.other_task, owner=self.other_user,
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1)
+        )
 
     def test_list_time_entries_returns_only_user_entries(self):
         """
