@@ -1,4 +1,5 @@
 # Python imports
+import uuid
 from datetime import timedelta
 # Django Imports
 from django.contrib.auth import get_user_model
@@ -8,8 +9,11 @@ from rest_framework import status
 # DRF Imports
 from rest_framework.test import APITestCase
 # Internal imports
+from TimeMate.Utils.utils import get_error_code
 from TimeEntry.models import TimeEntry
 from Task.models import Task
+from TimeEntry.validators import VALIDATION_ERROR_CODE_INVALID_TIME_RANGE
+from Task.validators import VALIDATION_ERROR_CODE_TASK_INVALID_OWNER
 
 User = get_user_model()
 
@@ -40,10 +44,7 @@ class TimeEntryCreateTests(APITestCase):
         }
         response = self.client.post(self.url, data=valid_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(
-            response.data['task'],
-            self.task.id
-        )
+        self.assertEqual(response.data['task'], self.task.id)
         self.assertEqual(TimeEntry.objects.count(), 2)
         self.assertEqual(response.data['owner']['username'], self.user.username)
 
@@ -64,12 +65,15 @@ class TimeEntryCreateTests(APITestCase):
         response = self.client.post(self.url, data=invalid_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('non_field_errors', response.data)
+        errors = response.data['non_field_errors']
+        self.assertEqual(get_error_code(errors), VALIDATION_ERROR_CODE_INVALID_TIME_RANGE)
 
     def test_create_time_entry_invalid_time_range(self):
         """
         Ensure that creating a time entry with start_time later than end_time returns a 400 error.
         The response should include appropriate validation error messages.
         """
+        self.client.force_authenticate(user=self.user)
         invalid_data = {
             'task': self.task.id,
             'start_time': timezone.now(),
@@ -77,14 +81,16 @@ class TimeEntryCreateTests(APITestCase):
         }
         response = self.client.post(self.url, data=invalid_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("You do not have permission to use this task.", str(response.data))
+        self.assertIn('non_field_errors', response.data)
+        errors = response.data['non_field_errors']
+        self.assertEqual(get_error_code(errors), VALIDATION_ERROR_CODE_INVALID_TIME_RANGE)
 
     def test_owner_field_is_ignored_in_input(self):
         """
         Ensure that the owner field is ignored, and replaced with the current user.
         """
         self.client.force_authenticate(user=self.user)
-        undesired_user = self.user.pk + 1
+        undesired_user = uuid.uuid4()
 
         data = {
             'task': self.task.id,
@@ -109,5 +115,7 @@ class TimeEntryCreateTests(APITestCase):
             'end_time': (timezone.now() + timedelta(hours=1)).isoformat(),
         }
         response = self.client.post(self.url, data=data)
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("You do not have permission to use this task.", str(response.data))
+        errors = response.data['task']
+        self.assertEqual(get_error_code(errors), VALIDATION_ERROR_CODE_TASK_INVALID_OWNER)
