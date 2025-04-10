@@ -1,6 +1,7 @@
 # Python Imports
 from datetime import datetime, timedelta
 # Django Imports
+from django.utils.dateparse import parse_datetime
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
@@ -124,5 +125,8 @@ class TimeEntryListSerializerTests(TestCase):
         serializer = TimeEntryListSerializer(instance=self.time_entry, context=self.context)
         self.assertEqual(serializer.data['id'], str(self.time_entry.id))
         self.assertEqual(serializer.data['task']['name'], self.task.name)
-        self.assertEqual(serializer.data['start_time'], self.time_entry.start_time.isoformat().replace('+00:00', 'Z'))
-        self.assertEqual(serializer.data['end_time'], self.time_entry.end_time.isoformat().replace('+00:00', 'Z'))
+        expected_start_time = parse_datetime(serializer.data['start_time'])
+        expected_end_time = parse_datetime(serializer.data['end_time'])
+
+        self.assertEqual(self.time_entry.start_time, expected_start_time)
+        self.assertEqual(self.time_entry.end_time, expected_end_time)
