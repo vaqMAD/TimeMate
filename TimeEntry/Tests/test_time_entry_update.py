@@ -10,12 +10,12 @@ from TimeMate.Utils.utils import get_error_code
 from Task.models import Task
 from TimeEntry.models import TimeEntry
 from TimeEntry.validators import VALIDATION_ERROR_CODE_INVALID_TIME_RANGE
+from Task.validators import VALIDATION_ERROR_CODE_TASK_INVALID_OWNER
 from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 
 User = get_user_model()
 
 
-# TODO [REFACTOR] : Refactor code after changes in validation codes
 class TimeEntryUpdateTests(APITestCase):
     def setUp(self):
         # Set up user objects for testing
@@ -89,7 +89,6 @@ class TimeEntryUpdateTests(APITestCase):
         error_detail = response.data['detail']
         self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
 
-
     def test_update_protected_fields(self):
         """
         Ensure that fields like 'owner' cannot be updated.
@@ -105,3 +104,36 @@ class TimeEntryUpdateTests(APITestCase):
         self.time_entry.refresh_from_db()
         # Ensure the owner has not changed
         self.assertEqual(self.time_entry.owner, self.user)
+
+    def test_update_time_entry_with_task_owner_success(self):
+        """
+        Ensure that the owner of the task can successfully update the task for a time entry.
+        """
+        self.client.force_authenticate(user=self.task.owner)
+        other_task_owned_by_user = Task.objects.create(name="Other Task", owner=self.user)
+        payload = {
+            'task': str(other_task_owned_by_user.id),
+            "start_time": "2025-10-01T09:00:00Z",
+            "end_time": "2025-10-01T11:00:00Z"
+        }
+        response = self.client.patch(self.detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_time_entry_with_task_owner_invalid_task_owner(self):
+        """
+        Ensure that attempting to update a time entry with a task assigned to a different owner
+        returns a 400 error.
+        """
+
+        self.client.force_authenticate(user=self.task.owner)
+        task_owned_by_other_user = Task.objects.create(name="Other Task", owner=self.other_user)
+
+        payload = {
+            'task': str(task_owned_by_other_user.id),
+            "start_time": "2025-10-01T09:00:00Z",
+            "end_time": "2025-10-01T11:00:00Z"
+        }
+        response = self.client.patch(self.detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_message = response.data['task']
+        self.assertEqual(get_error_code(error_message), VALIDATION_ERROR_CODE_TASK_INVALID_OWNER)
