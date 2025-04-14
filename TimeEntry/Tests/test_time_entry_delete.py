@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 # Internal imports
+from TimeMate.Utils.utils import get_error_code
+from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 from TimeEntry.models import TimeEntry
 from Task.models import Task
 
@@ -49,6 +51,9 @@ class TimeEntryDeleteTests(APITestCase):
         response = self.client.delete(self.detail_url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        error_detail = response.data['detail']
+        self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
+
         self.assertTrue(TimeEntry.objects.filter(id=self.time_entry.id).exists())
 
     def test_delete_time_entry_not_found(self):
