@@ -1,10 +1,18 @@
+# Django imports
+from django_filters.rest_framework import DjangoFilterBackend
 # DRF imports
+from rest_framework.filters import OrderingFilter
 from rest_framework import generics
 # Internal imports
 from .models import TimeEntry
-from .serializers import (TimeEntryCreateSerializer, TimeEntryListSerializer, TimeEntryDetailSerializer,
-                          TimeEntryUpdateSerializer)
+from .serializers import (
+    TimeEntryCreateSerializer,
+    TimeEntryListSerializer,
+    TimeEntryDetailSerializer,
+    TimeEntryUpdateSerializer
+)
 from TimeMate.Utils.pagination import DefaultPagination
+from .filters import TimeEntryFilter
 from TimeMate.Permissions.owner_permissions import IsObjectOwner
 
 
@@ -13,6 +21,9 @@ from TimeMate.Permissions.owner_permissions import IsObjectOwner
 # TODO [InProgress] : Think about whether structure of the GET response is appropriate.
 class TimeEntryListCreateView(generics.ListCreateAPIView):
     pagination_class = DefaultPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = TimeEntryFilter
+    ordering_fields = ['start_time', 'end_time', 'task']
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
