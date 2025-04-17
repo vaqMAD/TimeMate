@@ -15,6 +15,10 @@ User = get_user_model()
 
 
 class TimeEntryListTests(APITestCase):
+    """
+    Basic tests for TimeEntry list endpoint without filters.
+    """
+
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
         self.other_user = User.objects.create_user(username='otheruser', email='<EMAIL>', password='<PASSWORD>')
@@ -23,6 +27,7 @@ class TimeEntryListTests(APITestCase):
         self.task = Task.objects.create(name='Test Task', owner=self.user)
         self.url = reverse('time_entry_list_create')
 
+        # Create tasks and time entries for self.user
         self.time_entries = []
         self.tasks = []
         for i in range(5):
@@ -54,6 +59,7 @@ class TimeEntryListTests(APITestCase):
         self.assertEqual(len(response.data['results']), 5)
 
         returned_task_ids = {entry['id'] for entry in response.data['results']}
+        # Verify each created entry is returned
         for time_entry in self.time_entries:
             self.assertIn(str(time_entry.id), returned_task_ids)
 
@@ -73,7 +79,7 @@ class TimeEntryListTests(APITestCase):
         returned_ids = {entry['id'] for entry in response.data['results']}
         self.assertNotIn(str(self.other_time_entry.id), returned_ids)
 
-    def test_list_time_entries_returns_empty_list_for_user_without_tasks(self):
+    def test_list_time_entries_returns_empty_list_for_user_without_entries(self):
         """
         Verify that view returns an empty list for a user with no assigned tasks.
         """
@@ -84,13 +90,19 @@ class TimeEntryListTests(APITestCase):
 
 
 class TimeEntryListViewFilterPaginationTests(APITestCase):
+    """
+    Tests for TimeEntry list endpoint with filtering and pagination.
+    """
+
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
         self.other_user = User.objects.create_user(username='otheruser', email='<EMAIL>', password='<PASSWORD>')
 
+        # Two distinct tasks for filtering by task name
         self.task1 = Task.objects.create(name="Task 1", owner=self.user)
         self.task2 = Task.objects.create(name="Task 2", owner=self.user)
 
+        # Two entries with specific start and end for range tests
         self.time_entry1 = TimeEntry.objects.create(
             task=self.task1,
             owner=self.user,
@@ -104,6 +116,7 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
             end_time=timezone.now() - timedelta(hours=1)
         )
 
+        # Additional entries
         for i in range(5):
             TimeEntry.objects.create(
                 task=self.task1,
@@ -112,6 +125,7 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
                 end_time=timezone.now() - timedelta(days=i, hours=2)
             )
 
+        # Entry belonging to another user should be excluded
         self.task_owned_by_other_user = Task.objects.create(name="Other Task", owner=self.other_user)
         self.time_entry_owned_by_other_user = TimeEntry.objects.create(
             task=self.task_owned_by_other_user,
@@ -122,10 +136,9 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
 
         self.list_url = reverse('time_entry_list_create')
 
-    def test_pagination(self):
+    def test_pagination_links_present(self):
         """
-        Verify that pagination returns the default page size (10) and the correct total count.
-        Also, verify that 'next' and 'previous' links are provided.
+        Verify that pagination fields 'next' and 'previous' are in the response.
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url)
@@ -135,7 +148,60 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
 
+    def test_filter_start_time_after(self):
+        """
+        Test filtering entries with start_time greater than or equal to given value.
+        """
+        self.client.force_authenticate(user=self.user)
+        start_date = self.time_entry1.start_time
+        data = {'start_time_after': start_date.isoformat()}
+        expected_count = TimeEntry.objects.filter(owner=self.user, start_time__gte=data['start_time_after']).count()
+        response = self.client.get(self.list_url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), expected_count)
+
+    def test_filter_start_time_before(self):
+        """
+        Test filtering entries with start_time less than or equal to given value.
+        """
+        self.client.force_authenticate(user=self.user)
+        start_date = self.time_entry1.start_time
+        data = {'start_time_before': start_date.isoformat()}
+        response = self.client.get(self.list_url, data)
+        expected_count = TimeEntry.objects.filter(owner=self.user, start_time__lte=data['start_time_before']).count()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), expected_count)
+
+    def test_filter_end_time_after(self):
+        """
+        Test filtering entries with end_time greater than or equal to given value.
+        """
+        self.client.force_authenticate(user=self.user)
+        end_date = self.time_entry1.end_time
+        data = {'end_time_after': end_date.isoformat()}
+        response = self.client.get(self.list_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        expected_count = TimeEntry.objects.filter(owner=self.user, end_time__gte=data['end_time_after']).count()
+        self.assertEqual(len(response.data['results']), expected_count)
+
+    def test_filter_end_time_before(self):
+        """
+        Test filtering entries with end_time less than or equal to given value.
+        """
+        self.client.force_authenticate(user=self.user)
+        end_date = self.time_entry1.end_time
+        data = {'end_time_before': end_date.isoformat()}
+        response = self.client.get(self.list_url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected_count = TimeEntry.objects.filter(owner=self.user,end_time__lte=data['end_time_before']).count()
+        self.assertEqual(len(response.data['results']), expected_count)
+
     def test_list_time_entries_without_filters(self):
+        """
+        Verify default list returns all entries for the user when no filters are applied.
+        """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -144,12 +210,18 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
         self.assertEqual(len(response.data['results']), user_time_entries_count)
 
     def test_no_results_when_filter_criteria_not_match(self):
+        """
+        Verify that invalid filter criteria return an empty result set.
+        """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url, {'task': 'Not existing task'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 0)
 
     def test_filter_time_entries_by_task(self):
+        """
+        Verify filtering by task name returns only entries matching the task.
+        """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url, {'task': str(self.task2.name)})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -157,17 +229,23 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
         self.assertEqual(response.data['results'][0]['task']['id'], str(self.task2.id))
         self.assertEqual(response.data['results'][0]['task']['name'], str(self.task2.name))
 
-    # TODO : Add docstring and code comments to explain logic of test
     def test_view_filter_by_task_does_not_return_time_entries_not_owned_by_user(self):
+        """
+        Ensure filtering by task name does not expose other users' entries.
+        """
         self.client.force_authenticate(user=self.user)
+        # Use other user's task name in filter
         response = self.client.get(self.list_url, {'task': str(self.task_owned_by_other_user.name)})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Expect zero results since task belongs to another user
         self.assertEqual(len(response.data['results']), 0)
 
-    # TODO : Add docstring and code comments to explain logic of test
     def test_view_filter_by_date_time_range_does_not_return_time_entries_not_owned_by_user(self):
+        """
+        Ensure date range filters exclude entries not owned by the current user.
+        """
         self.client.force_authenticate(user=self.user)
-
+        # Define a range that includes self.user entries and other_user entry
         start_date = self.time_entry1.start_time
         end_date = self.time_entry2.end_time + timedelta(minutes=1)
         data = {
@@ -175,16 +253,21 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
             'end_time_before': end_date.strftime('%Y-%m-%dT%H%M')
         }
 
-        response = self.client.get(self.list_url,data)
+        response = self.client.get(self.list_url, data)
+        # Compute expected count via ORM using same bounds
         user_time_entries_in_range = TimeEntry.objects.filter(
             owner=self.user,
             start_time__gte=self.time_entry1.start_time.isoformat(),
             end_time__lte=self.time_entry2.end_time.isoformat())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Compare API result length to ORM count
         self.assertEqual(len(response.data['results']), user_time_entries_in_range.count())
         self.assertNotIn(self.time_entry_owned_by_other_user, response.data['results'])
 
     def test_ordering_time_entries_by_start_time(self):
+        """
+        Ensure that ordering by start_time works as expected.
+        """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url, {'ordering': 'start_time'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -193,6 +276,9 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
         self.assertEqual(start_times, sorted(start_times))
 
     def test_filter_time_entries_by_date_range(self):
+        """
+        Test combined date-only filters: start_time_after and start_time_before using 'YYYY-MM-DD'.
+        """
         self.client.force_authenticate(user=self.user)
 
         start_date = timezone.now() - timedelta(days=2)
@@ -204,5 +290,6 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
                                    )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # From the setup method we should only have one object that meets the filtering criteria
+        # Only one entry falls within the date range
         self.assertEqual(len(response.data['results']), 1)
+
