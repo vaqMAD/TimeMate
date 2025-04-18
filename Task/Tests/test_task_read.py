@@ -194,10 +194,11 @@ class TaskListViewFilterPaginationTests(APITestCase):
         returns the expected number of tasks.
         """
         self.client.force_authenticate(user=self.user)
+
+        # Create an excluded task with an older 'created_at' timestamp.
         excluded_task = Task.objects.create(name="Excluded Task", owner=self.user)
         excluded_task.created_at = timezone.now() - timedelta(days=2)
         excluded_task.save()
-
 
         data = {
             "created_at_after": timezone.now() - timedelta(days=1),
@@ -206,8 +207,9 @@ class TaskListViewFilterPaginationTests(APITestCase):
         response = self.client.get(self.list_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Since all tasks created in setUp fall within this date range, the count should be 15.
+        # Since all tasks created in setUp are within the last day, there should be 15 tasks in total.
         self.assertEqual(response.data['count'], 15)
+        # Ensure the excluded task (created more than a day ago) is not in the returned results.
         results = response.data['results']
         found = any(task['id'] == str(excluded_task.id) for task in results)
         self.assertFalse(found)
@@ -262,7 +264,6 @@ class TaskListViewFilterPaginationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", [])
         returned_ids = [t["id"] for t in results]
-
         # Verify that only the older task is included.
         self.assertIn(str(task_old.id), returned_ids)
         self.assertNotIn(str(task_new.id), returned_ids)
