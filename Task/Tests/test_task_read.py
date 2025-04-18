@@ -146,10 +146,15 @@ class TaskListViewFilterPaginationTests(APITestCase):
         self.user = User.objects.create_user(
             username='user1', password='<PASSWORD>', email='<EMAIL>'
         )
+        self.other_user = User.objects.create_user(
+            username='user2', password='<PASSWORD>', email='<EMAIL>'
+        )
 
-        # Create 15 Task objects for the authenticated user.
+        # Create 15 Task objects for the user1.
         for i in range(15):
             Task.objects.create(name=f"Task {i}", owner=self.user)
+
+        self.task_owned_by_other_user = Task.objects.create(name="Other task", owner=self.other_user)
 
         # Set up the URL for TaskListView.
         self.list_url = reverse("task_list")
@@ -170,6 +175,36 @@ class TaskListViewFilterPaginationTests(APITestCase):
         # Ensure pagination links are present.
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
+
+    def test_list_task_entries_without_filters(self):
+        """
+        Verify default list returns all entries for the user when no filters are applied.
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 15)
+        self.assertEqual(response.data['count'], 15)
+
+    def test_no_results_when_filter_criteria_not_match(self):
+        """
+        Verify that no results are returned when the filter criteria does not match any task.
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.list_url, {'name': 'non-existent-task'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_view_filter_by_task_name_does_not_return_entries_not_owned_by_user(self):
+        """
+        Ensure that filtering by task name does not return entries that are not owned by the user.
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.list_url, {'name': str(self.task_owned_by_other_user.name)})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
+        self.assertEqual(response.data['count'], 0)
 
     def test_filter_by_name(self):
         """
