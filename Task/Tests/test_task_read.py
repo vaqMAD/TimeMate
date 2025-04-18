@@ -68,8 +68,7 @@ class TaskDetailViewTests(APITestCase):
 
 class TaskListViewTests(APITestCase):
     """
-    Tests for the TaskListView.
-    This class checks that the view returns only tasks assigned to the authenticated user.
+    Tests for the TaskList endpoint without filters.
     """
 
     def setUp(self):
@@ -155,7 +154,7 @@ class TaskListViewFilterPaginationTests(APITestCase):
         # Set up the URL for TaskListView.
         self.list_url = reverse("task_list")
 
-    def test_pagination(self):
+    def test_pagination_defaults(self):
         """
         Verify that pagination returns the default page size (10) and the correct total count.
         Also, verify that 'next' and 'previous' links are provided.
@@ -179,13 +178,13 @@ class TaskListViewFilterPaginationTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         # Create a task with a unique name for filtering.
         unique_task = Task.objects.create(name="Unique Test Task", owner=self.user)
+        data = {'name': unique_task.name}
         # Send a GET request with the 'name' filter parameter.
-        response = self.client.get(self.list_url + "?name=Unique Test")
+        response = self.client.get(self.list_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Extract the list of tasks from the paginated results.
         results = response.data['results']
-        # Check if any task in the results matches the unique task's ID.
         found = any(task['id'] == str(unique_task.id) for task in results)
         self.assertTrue(found)
 
@@ -195,37 +194,43 @@ class TaskListViewFilterPaginationTests(APITestCase):
         returns the expected number of tasks.
         """
         self.client.force_authenticate(user=self.user)
-        now = timezone.now()
-        yesterday = now - timedelta(days=1)
-        tomorrow = now + timedelta(days=1)
-        # Build a URL with date filters using date only.
-        url_with_date = (
-            f"{self.list_url}?created_at_after={yesterday.date()}&created_at_before={tomorrow.date()}"
-        )
-        response = self.client.get(url_with_date)
+        excluded_task = Task.objects.create(name="Excluded Task", owner=self.user)
+        excluded_task.created_at = timezone.now() - timedelta(days=2)
+        excluded_task.save()
+
+
+        data = {
+            "created_at_after": timezone.now() - timedelta(days=1),
+            "created_at_before": timezone.now() + timedelta(days=1)
+        }
+        response = self.client.get(self.list_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Since all tasks created in setUp fall within this date range, the count should be 15.
         self.assertEqual(response.data['count'], 15)
+        results = response.data['results']
+        found = any(task['id'] == str(excluded_task.id) for task in results)
+        self.assertFalse(found)
 
     def test_filter_by_created_at_after(self):
         """
         Verify that filtering by 'created_at_after' returns only tasks created after the specified cutoff date.
         """
         self.client.force_authenticate(user=self.user)
-        now = timezone.now()
 
         # Create two tasks and manually adjust their 'created_at' timestamps.
         task_old = Task.objects.create(name="Old Task", owner=self.user)
         task_new = Task.objects.create(name="New Task", owner=self.user)
         # Update timestamps: task_old is older; task_new is newer.
-        Task.objects.filter(pk=task_old.pk).update(created_at=now - timedelta(days=2))
-        Task.objects.filter(pk=task_new.pk).update(created_at=now - timedelta(days=1))
+        Task.objects.filter(pk=task_old.pk).update(created_at=timezone.now() - timedelta(days=2))
+        Task.objects.filter(pk=task_new.pk).update(created_at=timezone.now() - timedelta(days=1))
 
         # Define the cutoff date: tasks created after this date should be returned.
-        cutoff = now - timedelta(days=1)
-        url_with_after = f"{self.list_url}?created_at_after={cutoff.date()}"
-        response = self.client.get(url_with_after)
+        cutoff = timezone.now() - timedelta(days=1)
+        data = {
+            "created_at_after": cutoff.date()
+        }
+        response = self.client.get(self.list_url, data=data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Get the list of returned task IDs.
@@ -240,19 +245,20 @@ class TaskListViewFilterPaginationTests(APITestCase):
         Verify that filtering by 'created_at_before' returns only tasks created before the specified cutoff date.
         """
         self.client.force_authenticate(user=self.user)
-        now = timezone.now()
 
         # Create two tasks and adjust their 'created_at' timestamps.
         task_old = Task.objects.create(name="Old Task", owner=self.user)
         task_new = Task.objects.create(name="New Task", owner=self.user)
         # Set 'created_at' such that task_old is older than task_new.
-        Task.objects.filter(pk=task_old.pk).update(created_at=now - timedelta(days=2))
-        Task.objects.filter(pk=task_new.pk).update(created_at=now - timedelta(days=1))
+        Task.objects.filter(pk=task_old.pk).update(created_at=timezone.now() - timedelta(days=2))
+        Task.objects.filter(pk=task_new.pk).update(created_at=timezone.now() - timedelta(days=1))
 
         # Define the cutoff date: tasks created before this date should be returned.
-        cutoff = now - timedelta(days=1)
-        url_with_before = f"{self.list_url}?created_at_before={cutoff.date()}"
-        response = self.client.get(url_with_before)
+        cutoff = timezone.now() - timedelta(days=1)
+        data = {
+            "created_at_before": cutoff.date()
+        }
+        response = self.client.get(self.list_url, data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = response.data.get("results", [])
         returned_ids = [t["id"] for t in results]
