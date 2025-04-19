@@ -1,5 +1,7 @@
 # Python imports
 from datetime import timedelta
+from winreg import error
+
 # Django Imports
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -8,13 +10,53 @@ from rest_framework import status
 # DRF Imports
 from rest_framework.test import APITestCase
 # Internal imports
+from TimeMate.Utils.utils import get_error_code
+from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 from TimeEntry.models import TimeEntry
 from Task.models import Task
 
 User = get_user_model()
 
 
-class TimeEntryListTests(APITestCase):
+class TimeEntryDetailViewTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
+        self.other_user = User.objects.create_user(username='otheruser', email='<EMAIL>', password='<PASSWORD>')
+
+        self.user_task = Task.objects.create(name='Test Task', owner=self.user)
+        self.user_time_entry = TimeEntry.objects.create(
+            task=self.user_task,
+            owner=self.user,
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1)
+        )
+
+        self.url = reverse('time_entry_detail',  kwargs={'pk': str(self.user_time_entry.id)})
+
+    def test_get_time_entry_by_id(self):
+        """
+        Verify that DetailView returns the correct task data for the owner.
+        """
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], str(self.user_time_entry.id))
+
+    def test_time_entry_view_denies_access_for_non_owner(self):
+        """
+        Verify that DetailView denies access for a user who is not the task owner.
+        """
+        self.client.force_authenticate(user=self.other_user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        error_detail = response.data['detail']
+        self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
+
+
+
+
+class TimeEntryListViewTests(APITestCase):
     """
     Basic tests for TimeEntry list endpoint without filters.
     """
@@ -195,12 +237,12 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
         response = self.client.get(self.list_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        expected_count = TimeEntry.objects.filter(owner=self.user,end_time__lte=data['end_time_before']).count()
+        expected_count = TimeEntry.objects.filter(owner=self.user, end_time__lte=data['end_time_before']).count()
         self.assertEqual(len(response.data['results']), expected_count)
 
     def test_list_time_entries_without_filters(self):
         """
-        Verify default list returns all entries for the user when no filters are applied.
+         ,
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url)
@@ -292,4 +334,3 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Only one entry falls within the date range
         self.assertEqual(len(response.data['results']), 1)
-
