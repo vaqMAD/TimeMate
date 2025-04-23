@@ -18,7 +18,9 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('tasks/', include('Task.urls')),
-    path('time-entries/', include('TimeEntry.urls')),
-]
+                  path('admin/', admin.site.urls),
+                  path('tasks/', include('Task.urls')),
+                  path('time-entries/', include('TimeEntry.urls')),
+                  path('api-auth/', include('rest_framework.urls')),
+              ]
+urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
