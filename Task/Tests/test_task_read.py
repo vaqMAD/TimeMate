@@ -64,7 +64,7 @@ class TaskDetailViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         error_detail = response.data['detail']
         self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
-
+        
 
 class TaskListViewTests(APITestCase):
     """
@@ -183,7 +183,7 @@ class TaskListViewFilterPaginationTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 15)
+        self.assertEqual(len(response.data['results']), 10)
         self.assertEqual(response.data['count'], 15)
 
     def test_no_results_when_filter_criteria_not_match(self):
