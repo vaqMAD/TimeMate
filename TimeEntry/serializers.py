@@ -70,3 +70,37 @@ class TimeEntryUpdateSerializer(serializers.ModelSerializer):
 
     def validate_task(self, value):
         return validate_task_ownership(value, self.context['request'].user)
+
+
+class TimeEntryNestedSerializerWithDurationField(serializers.ModelSerializer):
+    duration = serializers.SerializerMethodField()
+    detail_url = serializers.HyperlinkedIdentityField(
+        read_only=True,
+        view_name='time_entry_detail'
+    )
+
+    class Meta:
+        model = TimeEntry
+        fields = ['id', 'start_time', 'end_time', 'duration', 'detail_url']
+
+    def get_duration(self, obj):
+        # Queryset should have 'duration' annotation
+        if hasattr(obj, 'duration'):
+            return obj.duration
+        return obj.end_time - obj.start_time
+
+
+class TaskWithTimeEntriesSerializer(serializers.ModelSerializer):
+    entries = TimeEntryNestedSerializerWithDurationField(
+        source='time_entries',
+        many=True,
+        read_only=True
+    )
+    detail_url = serializers.HyperlinkedIdentityField(
+        read_only=True,
+        view_name='task_detail'
+    )
+
+    class Meta:
+        model = Task
+        fields = ['id', 'name', 'detail_url', 'entries']
