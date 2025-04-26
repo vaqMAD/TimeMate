@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'silk',
+    'drf_spectacular',
     # Internal apps
     'Task',
     'TimeEntry',
@@ -131,8 +132,18 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # 'DEFAULT_FILTER_BACKENDS': (
     #     'django_filters.rest_framework.DjangoFilterBackend',
     # ),
 
+}
+
+# Spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'TimeMate',
+    'DESCRIPTION': 'Your project description',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'EXTENSIONS': [ 'TimeEntry.spectacular_extensions.TimeEntryFilterExtension'],
 }
