@@ -13,3 +13,7 @@ env/
 
 # Database
 db.sqlite3
+
+#Others
+.coverage
+/htmlcov
