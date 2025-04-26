@@ -15,6 +15,7 @@ class TimeEntry(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='time_entries')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    duration = models.DurationField(editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -33,9 +34,15 @@ class TimeEntry(models.Model):
             models.Index(fields=['task']),
             models.Index(fields=['start_time']),
             models.Index(fields=['end_time']),
+            models.Index(fields=['duration']),
         ]
 
-        ordering = ['-start_time']
+        ordering = ['-end_time']
+
+    def save(self, *args, **kwargs):
+        # Calculate the duration by subtracting start_time from end_time
+        self.duration = self.end_time - self.start_time
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"TimeEntry for {self.task.name} ({self.start_time} - {self.end_time})"
