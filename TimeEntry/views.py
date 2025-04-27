@@ -1,6 +1,7 @@
 # Django imports
 from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models.functions import TruncDate
 # DRF imports
 from rest_framework.filters import OrderingFilter
 from rest_framework import generics
@@ -13,6 +14,7 @@ from .serializers import (
     TimeEntryDetailSerializer,
     TimeEntryUpdateSerializer,
     TaskWithTimeEntriesSerializer,
+    TimeEntryByDaySerializer,
 )
 from TimeMate.Utils.pagination import DefaultPagination
 from .filters import TimeEntryFilter
@@ -65,3 +67,14 @@ class TimeEntriesByTaskListView(TimeEntryBaseView, generics.ListAPIView):
         return task_qs.prefetch_related(
             Prefetch('time_entries', queryset=time_entries_qs)
         )
+
+class  TimeEntryByDateVListView(TimeEntryBaseView, generics.ListAPIView):
+    serializer_class = TimeEntryByDaySerializer
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return TimeEntry.objects.none()
+        return (TimeEntry.objects.filter(owner=self.request.user).
+                annotate(day=TruncDate('end_time')).
+                order_by('-day', '-end_time').
+                select_related('task'))
