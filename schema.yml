@@ -8,6 +8,20 @@ paths:
     get:
       operationId: tasks_list
       parameters:
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: name
+        schema:
+          type: string
       - name: ordering
         required: false
         in: query
@@ -167,6 +181,26 @@ paths:
   /time-entries/:
     get:
       operationId: time_entries_list
+      description: |-
+        Handles the creation and listing of time entry resources.
+
+        This class is a Django REST Framework view that provides API endpoints for
+        listing and creating time entry resources. It supports filtering, ordering,
+        and pagination based on predefined configurations. The serializer used for
+        data representation dynamically changes depending on the request method.
+
+        :ivar pagination_class: Specifies the pagination class to be used for paginating
+            the results.
+        :type pagination_class: type
+        :ivar filter_backends: Defines the filter backends to handle request filtering
+            and ordering.
+        :type filter_backends: list
+        :ivar filterset_class: Specifies the filter set class used for filtering
+            time entry data.
+        :type filterset_class: type
+        :ivar ordering_fields: Defines the fields that can be used to sort
+            the time entry results.
+        :type ordering_fields: list
       parameters:
       - in: query
         name: end_time_after
@@ -224,6 +258,26 @@ paths:
           description: ''
     post:
       operationId: time_entries_create
+      description: |-
+        Handles the creation and listing of time entry resources.
+
+        This class is a Django REST Framework view that provides API endpoints for
+        listing and creating time entry resources. It supports filtering, ordering,
+        and pagination based on predefined configurations. The serializer used for
+        data representation dynamically changes depending on the request method.
+
+        :ivar pagination_class: Specifies the pagination class to be used for paginating
+            the results.
+        :type pagination_class: type
+        :ivar filter_backends: Defines the filter backends to handle request filtering
+            and ordering.
+        :type filter_backends: list
+        :ivar filterset_class: Specifies the filter set class used for filtering
+            time entry data.
+        :type filterset_class: type
+        :ivar ordering_fields: Defines the fields that can be used to sort
+            the time entry results.
+        :type ordering_fields: list
       tags:
       - time-entries
       requestBody:
@@ -386,6 +440,16 @@ paths:
     get:
       operationId: time_entries_sorted_by_task_name_list
       parameters:
+      - in: query
+        name: end_time_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: end_time_before
+        schema:
+          type: string
+          format: date-time
       - name: ordering
         required: false
         in: query
@@ -404,6 +468,20 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - in: query
+        name: start_time_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: start_time_before
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: task
+        schema:
+          type: string
       tags:
       - time-entries
       security:
@@ -658,7 +736,7 @@ components:
         entries:
           type: array
           items:
-            $ref: '#/components/schemas/TimeEntryNestedSerializerWithDurationField'
+            $ref: '#/components/schemas/TimeEntryDurationSerializer'
           readOnly: true
       required:
       - detail_url
@@ -788,6 +866,7 @@ components:
           format: date-time
         duration:
           type: string
+          format: duration
           readOnly: true
         detail_url:
           type: string

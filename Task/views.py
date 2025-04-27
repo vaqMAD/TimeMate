@@ -37,4 +37,7 @@ class TaskListView(generics.ListAPIView):
     ordering_fields = ['created_at', 'name']
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Task.objects.none()
+
         return Task.objects.filter(owner=self.request.user)
