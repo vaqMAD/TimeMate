@@ -1,7 +1,5 @@
 # Python imports
 from datetime import timedelta
-from winreg import error
-
 # Django Imports
 from django.contrib.auth import get_user_model
 from django.urls import reverse

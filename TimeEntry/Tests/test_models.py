@@ -1,5 +1,6 @@
 # Django imports
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from django.db.utils import IntegrityError
 from django.test import TestCase
 # Internal imports
@@ -20,8 +21,8 @@ class TimeEntryModelTests(TestCase):
         self.time_entry = TimeEntry.objects.create(
             task=self.task,
             owner=self.user,
-            start_time='2025-10-01T08:00:00Z',
-            end_time='2025-10-01T10:00:00Z'
+            start_time=timezone.now(),
+            end_time=timezone.now() + timezone.timedelta(hours=1)
         )
 
     def test_time_entry_creation(self):
@@ -37,6 +38,6 @@ class TimeEntryModelTests(TestCase):
             TimeEntry.objects.create(
                 task=self.task,
                 owner=self.user,
-                start_time='2025-10-01T10:00:00Z',
-                end_time='2025-10-01T09:00:00Z'
+                start_time=timezone.now() + timezone.timedelta(hours=1),
+                end_time=timezone.now()
             )

@@ -1,4 +1,5 @@
 # Django imports
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -29,8 +30,8 @@ class TimeEntryUpdateTests(APITestCase):
         self.time_entry = TimeEntry.objects.create(
             task=self.task,
             owner=self.user,
-            start_time='2025-10-01T08:00:00Z',
-            end_time='2025-10-01T10:00:00Z'
+            start_time=timezone.now(),
+            end_time=timezone.now() + timezone.timedelta(hours=1)
         )
 
         self.detail_url = reverse('time_entry_detail', kwargs={'pk': self.time_entry.id})
