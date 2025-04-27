@@ -1,9 +1,5 @@
 # Django imports
-from django.db.models import (
-    F,
-    ExpressionWrapper,
-    DurationField, Prefetch
-)
+from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 # DRF imports
 from rest_framework.filters import OrderingFilter
@@ -16,18 +12,19 @@ from .serializers import (
     TimeEntryListSerializer,
     TimeEntryDetailSerializer,
     TimeEntryUpdateSerializer,
-    TaskWithTimeEntriesSerializer
+    TaskWithTimeEntriesSerializer,
 )
 from TimeMate.Utils.pagination import DefaultPagination
 from .filters import TimeEntryFilter
 from TimeMate.Permissions.owner_permissions import IsObjectOwner
 
-
-class TimeEntryListCreateView(generics.ListCreateAPIView):
+class TimeEntryBaseView:
     pagination_class = DefaultPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = TimeEntryFilter
-    ordering_fields = ['start_time', 'end_time', 'task']
+    ordering_fields = ['start_time', 'end_time', 'task', 'duration']
+
+class TimeEntryListCreateView(TimeEntryBaseView, generics.ListCreateAPIView):
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -35,6 +32,9 @@ class TimeEntryListCreateView(generics.ListCreateAPIView):
         return TimeEntryListSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return TimeEntry.objects.none()
+
         return TimeEntry.objects.filter(owner=self.request.user).select_related('task', 'owner')
 
 
@@ -50,23 +50,18 @@ class TimeEntryDetailView(generics.RetrieveUpdateDestroyAPIView):
         pk = self.kwargs.get("pk")
         return TimeEntry.objects.filter(pk=pk).select_related('task', 'owner')
 
-class TimeEntrySortedByTaskNameListView(generics.ListAPIView):
+
+class TimeEntriesByTaskListView(TimeEntryBaseView, generics.ListAPIView):
     serializer_class = TaskWithTimeEntriesSerializer
-    pagination_class = DefaultPagination
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_class = TimeEntryFilter
-    ordering_fields = ['start_time', 'end_time', 'task__name', 'entries__duration']
+    ordering_fields = ['start_time', 'end_time', 'task__name', 'duration']
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return TimeEntry.objects.none()
         task_qs = Task.objects.filter(owner=self.request.user)
 
-        time_entries_qs = TimeEntry.objects.annotate(
-            duration=ExpressionWrapper(
-                F('end_time') - F('start_time'),
-                output_field=DurationField()
-            )
-        ).order_by('task__name')
+        time_entries_qs = TimeEntry.objects.order_by('task__name')
 
         return task_qs.prefetch_related(
-            Prefetch('time_entries',queryset=time_entries_qs )
+            Prefetch('time_entries', queryset=time_entries_qs)
         )
