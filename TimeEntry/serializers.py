@@ -1,7 +1,6 @@
-# Python  imports
-import datetime
-# DRF imports
+# Python imports
 from collections import OrderedDict
+# DRF imports
 from rest_framework import serializers
 # Internal imports
 from .models import TimeEntry
@@ -111,5 +110,7 @@ class TimeEntryByDayListSerializer(serializers.ListSerializer):
         ]
 
 class TimeEntryByDaySerializer(TimeEntryBaseSerializer):
+    task = TaskListSerializer(read_only=True)
     class Meta(TimeEntryBaseSerializer.Meta):
         list_serializer_class = TimeEntryByDayListSerializer
+        fields = TimeEntryBaseSerializer.Meta.fields + ['task']

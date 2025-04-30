@@ -19,24 +19,25 @@ from .serializers import (
 from TimeMate.Utils.pagination import DefaultPagination
 from .filters import TimeEntryFilter
 from TimeMate.Permissions.owner_permissions import IsObjectOwner
+from TimeMate.Utils.view_helpers import swagger_safe_queryset
 
-class TimeEntryBaseView:
+
+class TimeEntryBaseView(generics.GenericAPIView):
+    queryset = TimeEntry.objects.none()
     pagination_class = DefaultPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = TimeEntryFilter
-    ordering_fields = ['start_time', 'end_time', 'task', 'duration']
+    ordering_fields = ['start_time', 'end_time', 'task__name', 'duration']
+
 
 class TimeEntryListCreateView(TimeEntryBaseView, generics.ListCreateAPIView):
-
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return TimeEntryCreateSerializer
         return TimeEntryListSerializer
 
+    @swagger_safe_queryset
     def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            return TimeEntry.objects.none()
-
         return TimeEntry.objects.filter(owner=self.request.user).select_related('task', 'owner')
 
 
@@ -55,11 +56,11 @@ class TimeEntryDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class TimeEntriesByTaskListView(TimeEntryBaseView, generics.ListAPIView):
     serializer_class = TaskWithTimeEntriesSerializer
-    ordering_fields = ['start_time', 'end_time', 'task__name', 'duration']
+    filterset_class = None
+    ordering_fields = []
 
+    @swagger_safe_queryset
     def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            return TimeEntry.objects.none()
         task_qs = Task.objects.filter(owner=self.request.user)
 
         time_entries_qs = TimeEntry.objects.order_by('task__name')
@@ -68,12 +69,13 @@ class TimeEntriesByTaskListView(TimeEntryBaseView, generics.ListAPIView):
             Prefetch('time_entries', queryset=time_entries_qs)
         )
 
-class  TimeEntryByDateVListView(TimeEntryBaseView, generics.ListAPIView):
-    serializer_class = TimeEntryByDaySerializer
 
+class TimeEntryByDateListView(TimeEntryBaseView, generics.ListAPIView):
+    serializer_class = TimeEntryByDaySerializer
+    ordering_fields = TimeEntryBaseView.ordering_fields + ['day']
+
+    @swagger_safe_queryset
     def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            return TimeEntry.objects.none()
         return (TimeEntry.objects.filter(owner=self.request.user).
                 annotate(day=TruncDate('end_time')).
                 order_by('-day', '-end_time').
