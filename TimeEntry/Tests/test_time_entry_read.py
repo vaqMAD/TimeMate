@@ -29,7 +29,7 @@ class TimeEntryDetailViewTests(APITestCase):
             end_time=timezone.now() + timedelta(hours=1)
         )
 
-        self.url = reverse('time_entry_detail',  kwargs={'pk': str(self.user_time_entry.id)})
+        self.url = reverse('time_entry_detail', kwargs={'pk': str(self.user_time_entry.id)})
 
     def test_get_time_entry_by_id(self):
         """
@@ -50,8 +50,6 @@ class TimeEntryDetailViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         error_detail = response.data['detail']
         self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
-
-
 
 
 class TimeEntryListViewTests(APITestCase):
@@ -332,3 +330,83 @@ class TimeEntryListViewFilterPaginationTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Only one entry falls within the date range
         self.assertEqual(len(response.data['results']), 1)
+
+
+class TimeEntryListViewOrderingTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', email='<EMAIL>', password='<PASSWORD>')
+        self.other_user = User.objects.create_user(username='otheruser', email='<EMAIL>', password='<PASSWORD>')
+
+        self.task_a = Task.objects.create(name="Alpha", owner=self.user)
+        self.task_b = Task.objects.create(name="Bravo", owner=self.user)
+        self.task_c = Task.objects.create(name="Charlie", owner=self.user)
+
+        now = timezone.now()
+        self.e1 = TimeEntry.objects.create(
+            task=self.task_a,
+            owner=self.user,
+            start_time=now,
+            end_time=now + timedelta(hours=1)
+        )
+        self.e2 = TimeEntry.objects.create(
+            task=self.task_b,
+            owner=self.user,
+            start_time=now - timedelta(hours=2),
+            end_time=now - timedelta(hours=1)
+        )
+        self.e3 = TimeEntry.objects.create(
+            task=self.task_c,
+            owner=self.user,
+            start_time=now - timedelta(hours=1),
+            end_time=now + timedelta(minutes=30)
+        )
+        self.url = reverse('time_entry_list_create')
+        self.client.force_authenticate(user=self.user)
+
+    def _get_ids(self, ordering_param):
+        data = {
+            'ordering': ordering_param
+        }
+        response = self.client.get(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return [entry['id'] for entry in response.data['results']]
+
+    def test_ordering_by_task_name_asc(self):
+        ids = self._get_ids('task__name')
+        # 'Alpha' < 'Beta' < 'Charlie'
+        self.assertEqual(ids, [str(self.e1.id), str(self.e2.id), str(self.e3.id)])
+
+    def test_ordering_by_task_name_desc(self):
+        ids = self._get_ids("-task__name")
+        self.assertEqual(ids, [str(self.e3.id), str(self.e2.id), str(self.e1.id)])
+
+    def test_ordering_by_start_time_asc(self):
+        ids = self._get_ids('start_time')
+        self.assertEqual(ids, [str(self.e2.id), str(self.e3.id), str(self.e1.id)])
+
+    def test_ordering_by_start_time_desc(self):
+        ids = self._get_ids("-start_time")
+        self.assertEqual(ids, [str(self.e1.id), str(self.e3.id), str(self.e2.id)])
+
+    def test_ordering_by_end_time_asc(self):
+        ids = self._get_ids("end_time")
+        self.assertEqual(ids, [str(self.e2.id), str(self.e3.id), str(self.e1.id)])
+
+    def test_ordering_by_end_time_desc(self):
+        ids = self._get_ids("-end_time")
+        self.assertEqual(ids, [str(self.e1.id), str(self.e3.id), str(self.e2.id)])
+
+    def test_ordering_by_duration_asc(self):
+        ids = self._get_ids('duration')
+        # duration to end_time - start_time
+        expected = sorted([self.e1, self.e2, self.e3],
+                          key=lambda e: (e.end_time - e.start_time))
+        self.assertEqual(ids, [str(e.id) for e in expected])
+
+
+    def test_ordering_by_duration_desc(self):
+        ids = self._get_ids('-duration')
+        expected = sorted([self.e1, self.e2, self.e3],
+                          key=lambda e: (e.end_time - e.start_time),
+                          reverse=True)
+        self.assertEqual(ids, [str(e.id) for e in expected])
