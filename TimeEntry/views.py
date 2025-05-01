@@ -20,6 +20,7 @@ from TimeMate.Utils.pagination import DefaultPagination
 from .filters import TimeEntryFilter
 from TimeMate.Permissions.owner_permissions import IsObjectOwner
 from TimeMate.Utils.view_helpers import swagger_safe_queryset
+from TimeMate.Utils.mixins import CacheListMixin
 
 
 class TimeEntryBaseView(generics.GenericAPIView):
@@ -30,7 +31,7 @@ class TimeEntryBaseView(generics.GenericAPIView):
     ordering_fields = ['start_time', 'end_time', 'task__name', 'duration']
 
 
-class TimeEntryListCreateView(TimeEntryBaseView, generics.ListCreateAPIView):
+class TimeEntryListCreateView(CacheListMixin, TimeEntryBaseView, generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return TimeEntryCreateSerializer
@@ -38,7 +39,7 @@ class TimeEntryListCreateView(TimeEntryBaseView, generics.ListCreateAPIView):
 
     @swagger_safe_queryset
     def get_queryset(self):
-        return TimeEntry.objects.filter(owner=self.request.user).select_related('task', 'owner')
+        return TimeEntry.objects.filter(owner=self.request.user).select_related('task', 'owner', 'task__owner')
 
 
 class TimeEntryDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -54,14 +55,14 @@ class TimeEntryDetailView(generics.RetrieveUpdateDestroyAPIView):
         return TimeEntry.objects.filter(pk=pk).select_related('task', 'owner')
 
 
-class TimeEntriesByTaskListView(TimeEntryBaseView, generics.ListAPIView):
+class TimeEntriesByTaskListView(CacheListMixin, TimeEntryBaseView, generics.ListAPIView):
     serializer_class = TaskWithTimeEntriesSerializer
     filterset_class = None
     ordering_fields = []
 
     @swagger_safe_queryset
     def get_queryset(self):
-        task_qs = Task.objects.filter(owner=self.request.user)
+        task_qs = Task.objects.filter(owner=self.request.user).select_related('owner')
 
         time_entries_qs = TimeEntry.objects.order_by('task__name')
 
@@ -70,7 +71,7 @@ class TimeEntriesByTaskListView(TimeEntryBaseView, generics.ListAPIView):
         )
 
 
-class TimeEntryByDateListView(TimeEntryBaseView, generics.ListAPIView):
+class TimeEntryByDateListView(CacheListMixin, TimeEntryBaseView, generics.ListAPIView):
     serializer_class = TimeEntryByDaySerializer
     ordering_fields = TimeEntryBaseView.ordering_fields + ['day']
 
@@ -79,4 +80,4 @@ class TimeEntryByDateListView(TimeEntryBaseView, generics.ListAPIView):
         return (TimeEntry.objects.filter(owner=self.request.user).
                 annotate(day=TruncDate('end_time')).
                 order_by('-day', '-end_time').
-                select_related('task'))
+                select_related('task', 'owner', 'task__owner'))
