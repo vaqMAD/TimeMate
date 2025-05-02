@@ -8,7 +8,7 @@ from rest_framework import status
 # DRF Imports
 from rest_framework.test import APITestCase
 # Internal imports
-from TimeMate.Utils.utils import get_error_code
+from TimeMate.Utils.test_helpers import get_error_code
 from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
 from TimeEntry.models import TimeEntry
 from Task.models import Task

@@ -5,7 +5,7 @@ from collections import namedtuple
 from rest_framework.exceptions import ErrorDetail
 
 # Internal imports
-from TimeMate.Utils.utils import get_error_code
+from TimeMate.Utils.test_helpers import get_error_code
 
 # Create simple object, to simulate error
 error_detail = namedtuple('error_detail', ['code'])

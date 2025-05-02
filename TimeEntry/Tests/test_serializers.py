@@ -9,7 +9,7 @@ from django.utils.timezone import now
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 # Internal Imports
-from TimeMate.Utils.utils import get_error_code
+from TimeMate.Utils.test_helpers import get_error_code
 from Task.models import Task
 from TimeEntry.models import TimeEntry
 from TimeEntry.serializers import TimeEntryCreateSerializer, TimeEntryListSerializer

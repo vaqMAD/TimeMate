@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 # DRF imports
 from rest_framework.serializers import ValidationError
 # Internal imports
-from TimeMate.Utils.utils import get_error_code
+from TimeMate.Utils.test_helpers import get_error_code
 from Task.models import Task
 from Task.validators import unique_owner_for_task_name, get_task_or_raise, validate_task_ownership
 from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME, VALIDATION_ERROR_CODE_TASK_NOT_FOUND, \

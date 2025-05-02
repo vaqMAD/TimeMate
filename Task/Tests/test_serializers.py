@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 # Internal imports
-from TimeMate.Utils.utils import get_error_code
+from TimeMate.Utils.test_helpers import get_error_code
 from Task.models import Task
 from Task.serializers import TaskCreateSerializer, TaskDetailSerializer, TaskListSerializer
 from Task.validators import VALIDATION_ERROR_CODE_UNIQUE_TASK_NAME

@@ -5,7 +5,7 @@ from django.test import TestCase
 # DRF imports
 from rest_framework.exceptions import ValidationError
 # Internal imports
-from TimeMate.Utils.utils import get_error_code
+from TimeMate.Utils.test_helpers import get_error_code
 from TimeEntry.validators import VALIDATION_ERROR_CODE_INVALID_TIME_RANGE
 from TimeEntry.validators import validate_start_and_end_time
 

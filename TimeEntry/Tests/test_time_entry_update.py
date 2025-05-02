@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 # Internal imports
-from TimeMate.Utils.utils import get_error_code
+from TimeMate.Utils.test_helpers import get_error_code
 from Task.models import Task
 from TimeEntry.models import TimeEntry
 from TimeEntry.validators import VALIDATION_ERROR_CODE_INVALID_TIME_RANGE
