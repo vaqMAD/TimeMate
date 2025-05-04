@@ -1,8 +1,8 @@
 # Python imports
+from asyncio import create_task
 from datetime import timedelta
 # Django imports
 from django.urls import reverse
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 # DRF imports
 from rest_framework import status
@@ -11,11 +11,10 @@ from rest_framework.test import APITestCase
 from TimeMate.Utils.test_helpers import get_error_code
 from Task.models import Task
 from TimeMate.Permissions.owner_permissions import PERMISSION_ERROR_CODE_NOT_TASK_OWNER
+from .base import BaseTaskAPITestCase, BaseTaskListViewTestCase
 
-User = get_user_model()
 
-
-class TaskDetailViewTests(APITestCase):
+class TaskDetailViewTests(BaseTaskAPITestCase):
     """
     Tests for the TaskDetailView.
     This class verifies that the view returns task details for the owner
@@ -23,16 +22,8 @@ class TaskDetailViewTests(APITestCase):
     """
 
     def setUp(self):
-        # Set up user objects for testing.
-        self.user_owner = User.objects.create_user(
-            username='user1', password='<PASSWORD>', email='<EMAIL>'
-        )
-        self.user_not_owner = User.objects.create_user(
-            username='user2', password='<PASSWORD>', email='<EMAIL>'
-        )
-
         # Create a task assigned to the owner.
-        self.task = Task.objects.create(name="Test Task", owner=self.user_owner)
+        self.task = Task.objects.create(name="Test Task", owner=self.user1)
 
         # Build the URL for TaskDetailView using the task's primary key.
         self.detail_url = reverse('task_detail', kwargs={'pk': self.task.pk})
@@ -41,12 +32,9 @@ class TaskDetailViewTests(APITestCase):
         """
         Verify that TaskDetailView returns the correct task data for the owner.
         """
-        # Authenticate as the task owner.
-        self.client.force_authenticate(user=self.user_owner)
-        # Send a GET request to the detail URL.
+        self.authenticate(self.user1)
         response = self.client.get(self.detail_url)
 
-        # Check that the response is OK and the task details match.
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], str(self.task.id))
         self.assertEqual(response.data['name'], self.task.name)
@@ -56,143 +44,106 @@ class TaskDetailViewTests(APITestCase):
         Verify that TaskDetailView denies access for a user who is not the task owner.
         """
         # Authenticate as a non-owner.
-        self.client.force_authenticate(user=self.user_not_owner)
-        # Send a GET request to the detail URL.
+        self.authenticate(self.user2)
         response = self.client.get(self.detail_url)
 
-        # Expect a 403 Forbidden response.
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        error_detail = response.data['detail']
-        self.assertEqual(get_error_code(error_detail), PERMISSION_ERROR_CODE_NOT_TASK_OWNER)
-        
+        self.assertEqual(
+            get_error_code(response.data['detail']),
+            PERMISSION_ERROR_CODE_NOT_TASK_OWNER
+        )
 
-class TaskListViewTests(APITestCase):
+
+class TaskListViewTests(BaseTaskListViewTestCase):
     """
     Tests for the TaskList endpoint without filters.
     """
 
-    def setUp(self):
-        # Create test users.
-        self.user = User.objects.create_user(
-            username='user1', password='<PASSWORD>', email='<EMAIL>'
-        )
-        self.other_user = User.objects.create_user(
-            username='user2', password='<PASSWORD>', email='<EMAIL>'
-        )
-        self.no_task_user = User.objects.create_user(
-            username='user3', password='<PASSWORD>', email='<EMAIL>'
-        )
-
-        # Create tasks for the authenticated user.
-        self.task1 = Task.objects.create(name="Task 1", owner=self.user)
-        self.task2 = Task.objects.create(name="Task 2", owner=self.user)
-        # Create a task for another user, which should not appear in the results.
-        self.task3 = Task.objects.create(name="Task 3", owner=self.other_user)
-
-        # Set up the URL for TaskListView.
-        self.list_url = reverse("task_list")
-
     def test_task_list_view_returns_task_for_authenticated_user(self):
         """
-        Verify that TaskListView returns only the tasks assigned to the authenticated user.
+        Verify that TaskListCreateView returns only the tasks assigned to the authenticated user.
         """
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.list_url)
+        self.create_task(user=self.user, amount=2)
 
+        self.authenticate_user(self.user)
+
+        response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Check that the results list contains exactly two tasks.
-        self.assertEqual(len(response.data['results']), 2)
-        # Create a set of task IDs from the results.
-        returned_ids = {task['id'] for task in response.data['results']}
-        # Verify that the tasks created for this user are present.
-        self.assertIn(str(self.task1.id), returned_ids)
-        self.assertIn(str(self.task2.id), returned_ids)
+
+        task_names = [item['name'] for item in response.data['results']]
+        task_ids = [item['id'] for item in response.data['results']]
+        user_tasks = Task.objects.filter(owner=self.user)
+        self.assertEqual(len(response.data['results']), user_tasks.count())
+        for task in user_tasks:
+            self.assertIn(str(task.name), task_names)
+            self.assertIn(str(task.id), task_ids)
 
     def test_task_list_view_not_returns_task_belonging_to_another_user(self):
         """
-        Verify that TaskListView does not return tasks that are not assigned to the authenticated user.
+        Verify that TaskListCreateView does not return tasks that are not assigned to the authenticated user.
         """
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.list_url)
+        # Create a task assigned to user.
+        self.create_task(user=self.user, amount=2)
+        # Create a task assigned to another user.
+        other_task = Task.objects.create(name="Other Task", owner=self.other_user)
 
+        self.authenticate_user(self.user)
+
+        response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Check that only two tasks are returned in results.
-        self.assertEqual(len(response.data['results']), 2)
-        returned_ids = {task['id'] for task in response.data['results']}
-        # Verify that the task belonging to another user is not included.
-        self.assertNotIn(str(self.task3.id), returned_ids)
+
+        task_names = [item['name'] for item in response.data['results']]
+        task_ids = [item['id'] for item in response.data['results']]
+
+        self.assertNotIn(str(other_task.name), task_names)
+        self.assertNotIn(str(other_task.id), task_ids)
 
     def test_task_list_view_returns_empty_list_for_user_without_tasks(self):
         """
-        Verify that TaskListView returns an empty list for a user with no assigned tasks.
+        Verify that TaskListCreateView returns an empty list for a user with no assigned tasks.
         """
         self.client.force_authenticate(user=self.no_task_user)
         response = self.client.get(self.list_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Expect results list to be empty.
+        # Expect, results list to be empty.
         self.assertEqual(len(response.data['results']), 0)
 
 
-class TaskListViewFilterPaginationTests(APITestCase):
+class TaskListViewFilterPaginationTests(BaseTaskListViewTestCase):
     """
-    Tests for filtering and pagination in TaskListView.
+    Tests for filtering and pagination in TaskListCreateView.
     This class verifies that pagination works correctly and that the filters
     for 'name' and 'created_at' return the expected results.
     """
 
-    def setUp(self):
-        # Create test users.
-        self.user = User.objects.create_user(
-            username='user1', password='<PASSWORD>', email='<EMAIL>'
-        )
-        self.other_user = User.objects.create_user(
-            username='user2', password='<PASSWORD>', email='<EMAIL>'
-        )
-
-        # Create 15 Task objects for the user1.
-        for i in range(15):
-            Task.objects.create(name=f"Task {i}", owner=self.user)
-
-        self.task_owned_by_other_user = Task.objects.create(name="Other task", owner=self.other_user)
-
-        # Set up the URL for TaskListView.
-        self.list_url = reverse("task_list")
-
     def test_pagination_defaults(self):
         """
         Verify that pagination returns the default page size (10) and the correct total count.
-        Also, verify that 'next' and 'previous' links are provided.
         """
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.list_url)
+        self.create_task(user=self.user, amount=25)
+        self.authenticate_user(self.user)
+        user_tasks_count = Task.objects.filter(owner=self.user).count()
 
+        response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         # Check that there are 10 tasks in results (default page size).
         self.assertEqual(len(response.data['results']), 10)
-        # Verify the total count of tasks for the user is 15.
-        self.assertEqual(response.data['count'], 15)
+        # Verify the total count of tasks for the user.
+        self.assertEqual(response.data['count'], user_tasks_count)
         # Ensure pagination links are present.
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
-
-    def test_list_task_entries_without_filters(self):
-        """
-        Verify default list returns all entries for the user when no filters are applied.
-        """
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 10)
-        self.assertEqual(response.data['count'], 15)
 
     def test_no_results_when_filter_criteria_not_match(self):
         """
         Verify that no results are returned when the filter criteria does not match any task.
         """
-        self.client.force_authenticate(user=self.user)
+        self.authenticate_user(self.user)
         response = self.client.get(self.list_url, {'name': 'non-existent-task'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         self.assertEqual(len(response.data['results']), 0)
         self.assertEqual(response.data['count'], 0)
 
@@ -200,9 +151,11 @@ class TaskListViewFilterPaginationTests(APITestCase):
         """
         Ensure that filtering by task name does not return entries that are not owned by the user.
         """
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(self.list_url, {'name': str(self.task_owned_by_other_user.name)})
+        self.authenticate_user(self.user)
+        task_owned_by_other_user = Task.objects.create(name="Unique Name", owner=self.other_user)
+        response = self.client.get(self.list_url, {'name': str(task_owned_by_other_user.name)})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         self.assertEqual(len(response.data['results']), 0)
         self.assertEqual(response.data['count'], 0)
 
@@ -210,25 +163,28 @@ class TaskListViewFilterPaginationTests(APITestCase):
         """
         Verify that filtering by task name returns only tasks whose name contains the specified substring.
         """
-        self.client.force_authenticate(user=self.user)
+        alpha = Task.objects.create(name="Alpha", owner=self.user)
+        beta = Task.objects.create(name="Beta Task", owner=self.user)
+        alpha_another = Task.objects.create(name="Alpha Another", owner=self.user)
+        self.authenticate_user(self.user)
+
         # Create a task with a unique name for filtering.
-        unique_task = Task.objects.create(name="Unique Test Task", owner=self.user)
-        data = {'name': unique_task.name}
+        data = {'name': alpha.name}
         # Send a GET request with the 'name' filter parameter.
         response = self.client.get(self.list_url, data)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Extract the list of tasks from the paginated results.
-        results = response.data['results']
-        found = any(task['id'] == str(unique_task.id) for task in results)
-        self.assertTrue(found)
+
+        task_names = [item['name'] for item in response.data['results']]
+        self.assertIn(str(alpha.name), task_names)
+        self.assertIn(str(alpha_another.name), task_names)
+        self.assertNotIn(beta.name, task_names)
 
     def test_filter_by_created_at_range(self):
         """
         Verify that filtering by a range of 'created_at' dates (using both 'created_at_after' and 'created_at_before')
         returns the expected number of tasks.
         """
-        self.client.force_authenticate(user=self.user)
+        today_tasks = self.create_task(user=self.user, amount=15)
 
         # Create an excluded task with an older 'created_at' timestamp.
         excluded_task = Task.objects.create(name="Excluded Task", owner=self.user)
@@ -239,11 +195,12 @@ class TaskListViewFilterPaginationTests(APITestCase):
             "created_at_after": timezone.now() - timedelta(days=1),
             "created_at_before": timezone.now() + timedelta(days=1)
         }
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(self.list_url, data)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Since all tasks created in setUp are within the last day, there should be 15 tasks in total.
-        self.assertEqual(response.data['count'], 15)
+
+        # Since all tasks created in, first line of test are within the last day, there should be 15 tasks in total.
+        self.assertEqual(response.data['count'], len(today_tasks))
         # Ensure the excluded task (created more than a day ago) is not in the returned results.
         results = response.data['results']
         found = any(task['id'] == str(excluded_task.id) for task in results)
@@ -253,52 +210,39 @@ class TaskListViewFilterPaginationTests(APITestCase):
         """
         Verify that filtering by 'created_at_after' returns only tasks created after the specified cutoff date.
         """
-        self.client.force_authenticate(user=self.user)
-
         # Create two tasks and manually adjust their 'created_at' timestamps.
-        task_old = Task.objects.create(name="Old Task", owner=self.user)
-        task_new = Task.objects.create(name="New Task", owner=self.user)
+        old, new = self.create_task(self.user, amount=2)
         # Update timestamps: task_old is older; task_new is newer.
-        Task.objects.filter(pk=task_old.pk).update(created_at=timezone.now() - timedelta(days=2))
-        Task.objects.filter(pk=task_new.pk).update(created_at=timezone.now() - timedelta(days=1))
+        Task.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=2))
+        Task.objects.filter(pk=new.pk).update(created_at=timezone.now() - timedelta(days=1))
+        self.authenticate_user(self.user)
 
         # Define the cutoff date: tasks created after this date should be returned.
         cutoff = timezone.now() - timedelta(days=1)
-        data = {
-            "created_at_after": cutoff.date()
-        }
-        response = self.client.get(self.list_url, data=data)
-
+        data = {"created_at_after": cutoff.date()}
+        response = self.client.get(self.list_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         # Get the list of returned task IDs.
-        results = response.data.get("results", [])
-        returned_ids = [t["id"] for t in results]
-        # Verify that only the newer task is returned.
-        self.assertIn(str(task_new.id), returned_ids)
-        self.assertNotIn(str(task_old.id), returned_ids)
+        returned_ids = {t["id"] for t in response.data.get("results", [])}
+        self.assertIn(str(new.id), returned_ids)
+        self.assertNotIn(str(old.id), returned_ids)
 
     def test_filter_by_created_at_before(self):
         """
         Verify that filtering by 'created_at_before' returns only tasks created before the specified cutoff date.
         """
-        self.client.force_authenticate(user=self.user)
+        old, new = self.create_task(self.user, amount=2)
+        Task.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=2))
+        Task.objects.filter(pk=new.pk).update(created_at=timezone.now() - timedelta(days=1))
 
-        # Create two tasks and adjust their 'created_at' timestamps.
-        task_old = Task.objects.create(name="Old Task", owner=self.user)
-        task_new = Task.objects.create(name="New Task", owner=self.user)
-        # Set 'created_at' such that task_old is older than task_new.
-        Task.objects.filter(pk=task_old.pk).update(created_at=timezone.now() - timedelta(days=2))
-        Task.objects.filter(pk=task_new.pk).update(created_at=timezone.now() - timedelta(days=1))
+        self.authenticate_user(self.user)
 
-        # Define the cutoff date: tasks created before this date should be returned.
         cutoff = timezone.now() - timedelta(days=1)
-        data = {
-            "created_at_before": cutoff.date()
-        }
-        response = self.client.get(self.list_url, data=data)
+        data = {"created_at_before": cutoff.date()}
+        response = self.client.get(self.list_url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        results = response.data.get("results", [])
-        returned_ids = [t["id"] for t in results]
-        # Verify that only the older task is included.
-        self.assertIn(str(task_old.id), returned_ids)
-        self.assertNotIn(str(task_new.id), returned_ids)
+
+        returned_ids = {t["id"] for t in response.data.get("results", [])}
+        self.assertIn(str(old.id), returned_ids)
+        self.assertNotIn(str(new.id), returned_ids)
