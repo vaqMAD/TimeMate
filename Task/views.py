@@ -9,7 +9,7 @@ from TimeMate.Permissions.owner_permissions import IsObjectOwner
 from TimeMate.Utils.pagination import DefaultPagination
 from .filters import TaskFilter
 
-
+# Tę klasę zaraz usuniemy
 class TaskCreateView(generics.CreateAPIView):
     serializer_class = TaskCreateSerializer
 
@@ -28,13 +28,17 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
         return TaskDetailSerializer
 
 
-class TaskListView(generics.ListAPIView):
+class TaskListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsObjectOwner]
-    serializer_class = TaskListSerializer
     pagination_class = DefaultPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = TaskFilter
     ordering_fields = ['created_at', 'name']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return TaskCreateSerializer
+        return TaskListSerializer
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
