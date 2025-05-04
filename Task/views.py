@@ -8,12 +8,12 @@ from .serializers import TaskCreateSerializer, TaskDetailSerializer, TaskListSer
 from TimeMate.Permissions.owner_permissions import IsObjectOwner
 from TimeMate.Utils.pagination import DefaultPagination
 from .filters import TaskFilter
+from .task_spectacular_extensions import (
+    TASK_DETAIL_SCHEMA,
+    TASK_LIST_CREATE_SCHEMA,
+)
 
-# Tę klasę zaraz usuniemy
-class TaskCreateView(generics.CreateAPIView):
-    serializer_class = TaskCreateSerializer
-
-
+@TASK_DETAIL_SCHEMA
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsObjectOwner]
     serializer_class = TaskDetailSerializer
@@ -27,7 +27,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
             return TaskUpdateSerializer
         return TaskDetailSerializer
 
-
+@TASK_LIST_CREATE_SCHEMA
 class TaskListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsObjectOwner]
     pagination_class = DefaultPagination

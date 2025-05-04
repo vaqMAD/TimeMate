@@ -7,27 +7,33 @@ paths:
   /tasks/:
     get:
       operationId: tasks_list
+      description: "− **GET** returns a paginated list of Tasks owned by the current\
+        \ user.  \n− **POST** creates a new Task (owner set automatically)."
+      summary: List all tasks or create a new task
       parameters:
       - in: query
         name: created_at_after
         schema:
           type: string
           format: date-time
+        description: Filter tasks created **on or after** this ISO8601 timestamp
       - in: query
         name: created_at_before
         schema:
           type: string
           format: date-time
+        description: Filter tasks created **on or before** this ISO8601 timestamp
       - in: query
         name: name
         schema:
           type: string
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
+        description: Filter by task name (case-insensitive substring match)
+      - in: query
+        name: ordering
         schema:
           type: string
+        description: 'Comma-separated list of fields to order by. Supported: `created_at`,
+          `-created_at`, `name`, `-name`.'
       - name: page
         required: false
         in: query
@@ -51,9 +57,66 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedTaskListList'
           description: ''
+    post:
+      operationId: tasks_create
+      description: "− **GET** returns a paginated list of Tasks owned by the current\
+        \ user.  \n− **POST** creates a new Task (owner set automatically)."
+      summary: List all tasks or create a new task
+      parameters:
+      - in: query
+        name: created_at_after
+        schema:
+          type: string
+          format: date-time
+        description: Filter tasks created **on or after** this ISO8601 timestamp
+      - in: query
+        name: created_at_before
+        schema:
+          type: string
+          format: date-time
+        description: Filter tasks created **on or before** this ISO8601 timestamp
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: Filter by task name (case-insensitive substring match)
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: 'Comma-separated list of fields to order by. Supported: `created_at`,
+          `-created_at`, `name`, `-name`.'
+      tags:
+      - tasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskCreate'
+          description: ''
   /tasks/{id}/:
     get:
       operationId: tasks_retrieve
+      description: "Endpoints for a single Task. - **GET** returns full details of\
+        \ the task identified by its ID.  \n- **PUT/PATCH** updates name/description\
+        \ (owner fixed to request.user).  \n- **DELETE** removes the task.  \n\nOnly\
+        \ the object's owner may call these methods."
+      summary: Retrieve, update or delete a specific task
       parameters:
       - in: path
         name: id
@@ -74,6 +137,11 @@ paths:
           description: ''
     put:
       operationId: tasks_update
+      description: "Endpoints for a single Task. - **GET** returns full details of\
+        \ the task identified by its ID.  \n- **PUT/PATCH** updates name/description\
+        \ (owner fixed to request.user).  \n- **DELETE** removes the task.  \n\nOnly\
+        \ the object's owner may call these methods."
+      summary: Retrieve, update or delete a specific task
       parameters:
       - in: path
         name: id
@@ -106,6 +174,11 @@ paths:
           description: ''
     patch:
       operationId: tasks_partial_update
+      description: "Endpoints for a single Task. - **GET** returns full details of\
+        \ the task identified by its ID.  \n- **PUT/PATCH** updates name/description\
+        \ (owner fixed to request.user).  \n- **DELETE** removes the task.  \n\nOnly\
+        \ the object's owner may call these methods."
+      summary: Retrieve, update or delete a specific task
       parameters:
       - in: path
         name: id
@@ -137,6 +210,11 @@ paths:
           description: ''
     delete:
       operationId: tasks_destroy
+      description: "Endpoints for a single Task. - **GET** returns full details of\
+        \ the task identified by its ID.  \n- **PUT/PATCH** updates name/description\
+        \ (owner fixed to request.user).  \n- **DELETE** removes the task.  \n\nOnly\
+        \ the object's owner may call these methods."
+      summary: Retrieve, update or delete a specific task
       parameters:
       - in: path
         name: id
@@ -151,56 +229,22 @@ paths:
       responses:
         '204':
           description: No response body
-  /tasks/create/:
-    post:
-      operationId: tasks_create_create
-      tags:
-      - tasks
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TaskCreate'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/TaskCreate'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/TaskCreate'
-        required: true
-      security:
-      - tokenAuth: []
-      - {}
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaskCreate'
-          description: ''
   /time-entries/:
     get:
       operationId: time_entries_list
       description: |-
-        Handles the creation and listing of time entry resources.
+        Cache GET list responses based on user and query params.
 
-        This class is a Django REST Framework view that provides API endpoints for
-        listing and creating time entry resources. It supports filtering, ordering,
-        and pagination based on predefined configurations. The serializer used for
-        data representation dynamically changes depending on the request method.
+        On `list()`, uses `get_cache_key` to fetch/set cached `.data`
+        for up to `cache_timeout` seconds.
 
-        :ivar pagination_class: Specifies the pagination class to be used for paginating
-            the results.
-        :type pagination_class: type
-        :ivar filter_backends: Defines the filter backends to handle request filtering
-            and ordering.
-        :type filter_backends: list
-        :ivar filterset_class: Specifies the filter set class used for filtering
-            time entry data.
-        :type filterset_class: type
-        :ivar ordering_fields: Defines the fields that can be used to sort
-            the time entry results.
-        :type ordering_fields: list
+        Attributes:
+            cache_timeout (int): Time in seconds to keep cached responses.
+
+        :param request: DRF Request object.
+        :type request: rest_framework.request.Request
+        :return: Cached or fresh DRF Response.
+        :rtype: rest_framework.response.Response
       parameters:
       - in: query
         name: end_time_after
@@ -259,25 +303,18 @@ paths:
     post:
       operationId: time_entries_create
       description: |-
-        Handles the creation and listing of time entry resources.
+        Cache GET list responses based on user and query params.
 
-        This class is a Django REST Framework view that provides API endpoints for
-        listing and creating time entry resources. It supports filtering, ordering,
-        and pagination based on predefined configurations. The serializer used for
-        data representation dynamically changes depending on the request method.
+        On `list()`, uses `get_cache_key` to fetch/set cached `.data`
+        for up to `cache_timeout` seconds.
 
-        :ivar pagination_class: Specifies the pagination class to be used for paginating
-            the results.
-        :type pagination_class: type
-        :ivar filter_backends: Defines the filter backends to handle request filtering
-            and ordering.
-        :type filter_backends: list
-        :ivar filterset_class: Specifies the filter set class used for filtering
-            time entry data.
-        :type filterset_class: type
-        :ivar ordering_fields: Defines the fields that can be used to sort
-            the time entry results.
-        :type ordering_fields: list
+        Attributes:
+            cache_timeout (int): Time in seconds to keep cached responses.
+
+        :param request: DRF Request object.
+        :type request: rest_framework.request.Request
+        :return: Cached or fresh DRF Response.
+        :rtype: rest_framework.response.Response
       tags:
       - time-entries
       requestBody:
@@ -402,43 +439,22 @@ paths:
       responses:
         '204':
           description: No response body
-  /time-entries/sorted-by-duration/:
+  /time-entries/sorted-by-date/:
     get:
-      operationId: time_entries_sorted_by_duration_list
-      parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      tags:
-      - time-entries
-      security:
-      - tokenAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedTimeEntryListSerializerWithDurationList'
-          description: ''
-  /time-entries/sorted-by-task-name/:
-    get:
-      operationId: time_entries_sorted_by_task_name_list
+      operationId: time_entries_sorted_by_date_list
+      description: |-
+        Cache GET list responses based on user and query params.
+
+        On `list()`, uses `get_cache_key` to fetch/set cached `.data`
+        for up to `cache_timeout` seconds.
+
+        Attributes:
+            cache_timeout (int): Time in seconds to keep cached responses.
+
+        :param request: DRF Request object.
+        :type request: rest_framework.request.Request
+        :return: Cached or fresh DRF Response.
+        :rtype: rest_framework.response.Response
       parameters:
       - in: query
         name: end_time_after
@@ -482,6 +498,53 @@ paths:
         name: task
         schema:
           type: string
+      tags:
+      - time-entries
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTimeEntryByDayList'
+          description: ''
+  /time-entries/sorted-by-task-name/:
+    get:
+      operationId: time_entries_sorted_by_task_name_list
+      description: |-
+        Cache GET list responses based on user and query params.
+
+        On `list()`, uses `get_cache_key` to fetch/set cached `.data`
+        for up to `cache_timeout` seconds.
+
+        Attributes:
+            cache_timeout (int): Time in seconds to keep cached responses.
+
+        :param request: DRF Request object.
+        :type request: rest_framework.request.Request
+        :return: Cached or fresh DRF Response.
+        :rtype: rest_framework.response.Response
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       tags:
       - time-entries
       security:
@@ -542,6 +605,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TaskWithTimeEntries'
+    PaginatedTimeEntryByDayList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeEntryByDay'
     PaginatedTimeEntryListList:
       type: object
       required:
@@ -565,29 +651,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TimeEntryList'
-    PaginatedTimeEntryListSerializerWithDurationList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/TimeEntryListSerializerWithDuration'
     PatchedTaskUpdate:
       type: object
       properties:
@@ -624,8 +687,21 @@ components:
         end_time:
           type: string
           format: date-time
+        duration:
+          type: string
+          readOnly: true
     TaskCreate:
       type: object
+      description: |-
+        Replace the `owner` ID with serialized user data.
+
+        Overrides `to_representation` to embed a nested `owner` object
+        using `UserSerializer` if the instance has an `owner` attribute.
+
+        :param instance: Model instance being serialized.
+        :type instance: models.Model
+        :return: Serialized data dict with expanded `owner`.
+        :rtype: dict
       properties:
         id:
           type: string
@@ -650,6 +726,16 @@ components:
       - name
     TaskDetail:
       type: object
+      description: |-
+        Replace the `owner` ID with serialized user data.
+
+        Overrides `to_representation` to embed a nested `owner` object
+        using `UserSerializer` if the instance has an `owner` attribute.
+
+        :param instance: Model instance being serialized.
+        :type instance: models.Model
+        :return: Serialized data dict with expanded `owner`.
+        :rtype: dict
       properties:
         id:
           type: string
@@ -736,15 +822,82 @@ components:
         entries:
           type: array
           items:
-            $ref: '#/components/schemas/TimeEntryDurationSerializer'
+            $ref: '#/components/schemas/TimeEntryBase'
           readOnly: true
       required:
       - detail_url
       - entries
       - id
       - name
+    TimeEntryBase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        duration:
+          type: string
+          readOnly: true
+        detail_url:
+          type: string
+          format: uri
+          readOnly: true
+      required:
+      - detail_url
+      - duration
+      - end_time
+      - id
+      - start_time
+    TimeEntryByDay:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        duration:
+          type: string
+          readOnly: true
+        detail_url:
+          type: string
+          format: uri
+          readOnly: true
+        task:
+          allOf:
+          - $ref: '#/components/schemas/TaskList'
+          readOnly: true
+      required:
+      - detail_url
+      - duration
+      - end_time
+      - id
+      - start_time
+      - task
     TimeEntryCreate:
       type: object
+      description: |-
+        Replace the `owner` ID with serialized user data.
+
+        Overrides `to_representation` to embed a nested `owner` object
+        using `UserSerializer` if the instance has an `owner` attribute.
+
+        :param instance: Model instance being serialized.
+        :type instance: models.Model
+        :return: Serialized data dict with expanded `owner`.
+        :rtype: dict
       properties:
         task:
           type: string
@@ -755,17 +908,22 @@ components:
         end_time:
           type: string
           format: date-time
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
       required:
-      - created_at
       - end_time
       - start_time
       - task
     TimeEntryDetail:
       type: object
+      description: |-
+        Replace the `owner` ID with serialized user data.
+
+        Overrides `to_representation` to embed a nested `owner` object
+        using `UserSerializer` if the instance has an `owner` attribute.
+
+        :param instance: Model instance being serialized.
+        :type instance: models.Model
+        :return: Serialized data dict with expanded `owner`.
+        :rtype: dict
       properties:
         id:
           type: string
@@ -781,6 +939,9 @@ components:
         end_time:
           type: string
           format: date-time
+        duration:
+          type: string
+          readOnly: true
         owner:
           type: integer
         created_at:
@@ -789,6 +950,7 @@ components:
           readOnly: true
       required:
       - created_at
+      - duration
       - end_time
       - id
       - owner
@@ -811,35 +973,9 @@ components:
         end_time:
           type: string
           format: date-time
-        detail_url:
-          type: string
-          format: uri
-          readOnly: true
-      required:
-      - detail_url
-      - end_time
-      - id
-      - start_time
-      - task
-    TimeEntryListSerializerWithDuration:
-      type: object
-      properties:
         duration:
           type: string
-        id:
-          type: string
-          format: uuid
           readOnly: true
-        task:
-          allOf:
-          - $ref: '#/components/schemas/TaskList'
-          readOnly: true
-        start_time:
-          type: string
-          format: date-time
-        end_time:
-          type: string
-          format: date-time
         detail_url:
           type: string
           format: uri
@@ -851,33 +987,6 @@ components:
       - id
       - start_time
       - task
-    TimeEntryNestedSerializerWithDurationField:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        start_time:
-          type: string
-          format: date-time
-        end_time:
-          type: string
-          format: date-time
-        duration:
-          type: string
-          format: duration
-          readOnly: true
-        detail_url:
-          type: string
-          format: uri
-          readOnly: true
-      required:
-      - detail_url
-      - duration
-      - end_time
-      - id
-      - start_time
     TimeEntryUpdate:
       type: object
       properties:
@@ -894,7 +1003,11 @@ components:
         end_time:
           type: string
           format: date-time
+        duration:
+          type: string
+          readOnly: true
       required:
+      - duration
       - end_time
       - id
       - start_time

@@ -153,8 +153,8 @@ REST_FRAMEWORK = {
 # Spectacular settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'TimeMate',
-    'DESCRIPTION': 'Your project description',
+    'DESCRIPTION': ' A lightweight, powerful and fully API-first backend for time tracking work and task management, inspired by the functionality of toggl.com',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'EXTENSIONS': [ 'TimeEntry.spectacular_extensions.TimeEntryFilterExtension'],
+    'EXTENSIONS': [ 'TimeEntry.time_entry_spectacular_extensions.TimeEntryFilterExtension', 'Task.task_spectacular_extensions.TaskFilterExtension' ],
 }

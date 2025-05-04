@@ -37,7 +37,7 @@ class CacheAndSignalTests(APITestCase):
         self.time_entry_detail_url = lambda pk: reverse('time_entry_detail', args=[pk])
         self.time_entry_by_task_url = reverse('time_entry_sorted_by_task_name')
         self.time_entry_by_date_url = reverse('time_entry_sorted_by_date')
-        self.task_list_create_url = reverse('task_list')
+        self.task_list_create_url = reverse('task_list_create')
         self.task_detail_url = lambda pk: reverse('task_detail', args=[pk])
 
     def test_cache_list_mixin_sets_cache_key(self):

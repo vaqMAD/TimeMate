@@ -114,3 +114,7 @@ class TimeEntryByDaySerializer(TimeEntryBaseSerializer):
     class Meta(TimeEntryBaseSerializer.Meta):
         list_serializer_class = TimeEntryByDayListSerializer
         fields = TimeEntryBaseSerializer.Meta.fields + ['task']
+
+class GroupedTimeEntriesSerializerForSchema(serializers.Serializer):
+    day = serializers.DateField()
+    entries = TimeEntryByDaySerializer(many=True)
