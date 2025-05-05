@@ -55,3 +55,24 @@ docker run -d --name timemate -p 8000:8000 vaqmadx/timemate:latest
    Password:  1234
    Token:     9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
    ```
+4. Your first API request
+   - In your client (Postman, curl, etc.), add this header to authenticate `Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b`
+   - 📊 Explore sample data:
+     The application comes with demo data that you can explore right away by querying the following endpoints:
+     - View time entries sorted by date: `GET http://127.0.0.1:8000/time-entries/sorted-by-date/`
+     - View time entries sorted by task name: `GET http://127.0.0.1:8000/time-entries/sorted-by-task-name/`
+   - Filtering & ordering
+     You can apply query parameters as shown in the docs, for example: `GET http://127.0.0.1:8000/time-entries/?ordering=-end_time&end_time_after=2025-04-29`
+   - Creating your own entries:
+     If you send an invalid payload, TimeMate will return a clear error. For instance, trying to set end_time before start_time:
+     ```bash
+     POST http://127.0.0.1:8000/time-entries/
+     Content-Type: application/json
+     Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+
+      {
+        "task": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "start_time": "2025-05-05T19:25:01.788Z",
+        "end_time":   "2025-05-05T18:25:01.788Z"
+      }
+     ```
