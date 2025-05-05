@@ -16,7 +16,7 @@ Along the way, I deepened my understanding of:
 - Converting between formats (string ↔ Python/Django datetime objects)  
 - Formatting time objects into the exact representation you need
 
-## 🚀 Quick Start
+## ⚙️ Installation
 Choose one of the following methods to get **TimeMate** up and running:
 
 
@@ -43,3 +43,6 @@ docker run -d --name timemate -p 8000:8000 vaqmadx/timemate:latest
 ```
 
 ---
+## 🚀 Quick Start 
+1. **Access the running app**  
+   After building and starting the containers, TimeMate is available at: `http://127.0.0.1:8000` or `http://localhost:8000`
