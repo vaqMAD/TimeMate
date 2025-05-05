@@ -32,7 +32,7 @@ cd timemate
 docker compose up --build -d
 ```
 --- 
-### 2. From source with Docker Compose
+### 2. Pull pre-built image from Docker Hub
 1. Pull the latest image:
 ```bash
 docker pull vaqmadx/timemate:latest
