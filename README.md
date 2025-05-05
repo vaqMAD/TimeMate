@@ -46,3 +46,12 @@ docker run -d --name timemate -p 8000:8000 vaqmadx/timemate:latest
 ## 🚀 Quick Start 
 1. **Access the running app**  
    After building and starting the containers, TimeMate is available at: `http://127.0.0.1:8000` or `http://localhost:8000`
+2. **Explore the API docs**  
+   Swagger UI is served at:  `http://127.0.0.1:8000/api/schema/swagger-ui/`
+3. **Superuser credentials**  
+   If you need to log into the Django admin or make authenticated API calls, use:
+   ```
+   Username:  admin@admin.com
+   Password:  1234
+   Token:     9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+   ```
