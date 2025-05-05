@@ -1,78 +1,110 @@
-# TimeMate
-A lightweight, powerful and fully API-first backend for time tracking and task management, inspired by [Toggl.com's](https://toggl.com/) functionality.
-**Key features:**
-- 🔄 Intelligent caching layer for sub-millisecond response times  
-- ✅ Over 100 unit & integration tests ensuring rock-solid stability
+# 🕒 TimeMate – API-First Time Tracking Backend
 
-## 🤔 Why?
+A lightweight, powerful and fully API-first backend for time tracking and task management, inspired by [Toggl.com's](https://toggl.com/) functionality.  
+Includes features such as intelligent caching, over 100 unit/integration tests, and a clean, modular architecture.
 
-At the start of my programming journey, trying to understand how time-related objects and operations work gave me a few gray hairs 😉  
-Back then, I relied heavily on time trackers — both at my previous job to measure time spent on tasks, and for personal motivation while learning to code.
+---
 
-So I drew inspiration from Toggl.com’s features and built my own API service to tackle the problem hands-on.  
-That’s how **TimeMate** was born — a backend project where I could organize my knowledge, learn best practices, and, incidentally, create something that actually works.
-Along the way, I deepened my understanding of:  
-- International date/time standards like **`ISO 8601`**  
-- Converting between formats (string ↔ Python/Django datetime objects)  
-- Formatting time objects into the exact representation you need
+## ❓ Why
 
-## ⚙️ Installation
-Choose one of the following methods to get **TimeMate** up and running:
+At the beginning of my programming journey, understanding how time-related operations work in code gave me quite a few headaches 😉.
 
+Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on specific tasks, and for self-motivation during coding sessions.
 
-### 1. From source with Docker Compose
+So, I decided to turn that challenge into an opportunity and build my own API service, inspired by Toggl.com.
 
-1. Clone the repository:
+That’s how **TimeMate** was born — a backend project that helped me organize my knowledge, apply best practices, and build something that actually works.
+
+Along the way, I learned more about:
+
+- International time standards like **`ISO 8601`**
+- Date format conversion (string ↔ Python/Django object)
+- Formatting datetime objects into desired formats
+
+---
+
+## 🛠️ Installation
+
+You can install and run the app using one of two methods:
+
+### 1. Clone the Repository & Build with Docker Compose
 ```bash
 git clone https://github.com/your-username/timemate.git
 cd timemate
+docker compose up --build
 ```
-2. Build and start containers:
+
+### 2. Pull the Image from Docker Hub
 ```bash
-docker compose up --build -d
-```
---- 
-### 2. Pull pre-built image from Docker Hub
-1. Pull the latest image:
-```bash
-docker pull vaqmadx/timemate:latest
-```
-2. Run the container:
-```bash
-docker run -d --name timemate -p 8000:8000 vaqmadx/timemate:latest
+docker pull vaqmadx/timemate
+docker run -p 8000:8000 vaqmadx/timemate
 ```
 
 ---
-## 🚀 Quick Start 
-1. **Access the running app**  
-   After building and starting the containers, TimeMate is available at: `http://127.0.0.1:8000` or `http://localhost:8000`
-2. **Explore the API docs**  
-   Swagger UI is served at:  `http://127.0.0.1:8000/api/schema/swagger-ui/`
-3. **Superuser credentials**  
-   If you need to log into the Django admin or make authenticated API calls, use:
-   ```
-   Username:  admin@admin.com
-   Password:  1234
-   Token:     9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
-   ```
-4. Your first API request
-   - In your client (Postman, curl, etc.), add this header to authenticate `Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b`
-   - 📊 Explore sample data:
-     The application comes with demo data that you can explore right away by querying the following endpoints:
-     - View time entries sorted by date: `GET http://127.0.0.1:8000/time-entries/sorted-by-date/`
-     - View time entries sorted by task name: `GET http://127.0.0.1:8000/time-entries/sorted-by-task-name/`
-   - Filtering & ordering
-     You can apply query parameters as shown in the docs, for example: `GET http://127.0.0.1:8000/time-entries/?ordering=-end_time&end_time_after=2025-04-29`
-   - Creating your own entries:
-     If you send an invalid payload, TimeMate will return a clear error. For instance, trying to set end_time before start_time:
-     ```bash
-     POST http://127.0.0.1:8000/time-entries/
-     Content-Type: application/json
-     Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
-      {
-        "task": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "start_time": "2025-05-05T19:25:01.788Z",
-        "end_time":   "2025-05-05T18:25:01.788Z"
-      }
-     ```
+## 🚀 Quick Start / Usage
+
+### 1. Access the App
+Once the container is running, the app will be available at:  
+`http://127.0.0.1:8000` or `http://localhost:8000`
+
+### 2. API Documentation
+Visit the interactive docs at:  
+`http://127.0.0.1:8000/api/schema/swagger-ui/`
+
+### 3. Superuser Credentials (for testing)
+- **Username:** `admin@admin.com`
+- **Password:** `1234`
+- **Auth Token:** `9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b`
+
+---
+
+### 📡 Your First API Request
+
+Once your container is running, you can start interacting with the API. Here’s how:
+
+#### 🔐 Authenticate
+Add the following header to your requests in Postman, curl, or any HTTP client:
+```http
+Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+```
+
+#### 📊 Explore Sample Data
+The application comes with demo data that you can explore right away by querying:
+
+- `GET http://127.0.0.1:8000/time-entries/sorted-by-date/`  
+  _View time entries sorted by date_
+- `GET http://127.0.0.1:8000/time-entries/sorted-by-task-name/`  
+  _View time entries sorted by task name_
+
+#### ⚙️ Filtering & Ordering
+You can filter or sort time entries using query parameters (as documented in the schema). Example:
+```http
+GET http://127.0.0.1:8000/time-entries/?ordering=-end_time&end_time_after=2025-04-29
+```
+
+#### 🛠 Create Your Own Entries
+You can also post your own time entries. The app includes business logic validation — for example, if `end_time` is earlier than `start_time`, you’ll receive a clear error response:
+
+```http
+POST http://127.0.0.1:8000/time-entries/
+Content-Type: application/json
+Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+```
+
+```json
+{
+  "task": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "start_time": "2025-05-05T19:25:01.788Z",
+  "end_time": "2025-05-05T18:25:01.788Z"
+}
+```
+
+**Response:**
+```json
+{
+  "non_field_errors": [
+    "End time 2025-05-05 18:25:01.788000+00:00 must be greater than start time 2025-05-05 19:25:01.788000+00:00"
+  ]
+}
+```
