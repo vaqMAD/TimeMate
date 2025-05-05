@@ -39,10 +39,7 @@ docker pull vaqmadx/timemate:latest
 ```
 2. Run the container:
 ```bash
-docker run -d \
---name timemate \
--p 8000:8000 \
-vaqmadx/timemate:latest
+docker run -d --name timemate -p 8000:8000 vaqmadx/timemate:latest
 ```
 
 ---
