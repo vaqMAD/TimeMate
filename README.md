@@ -108,3 +108,39 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
   ]
 }
 ```
+
+## ⭐ What Sets TimeMate Apart
+
+- **Intelligent Caching**  
+  `CacheListMixin` accelerates repeated list requests with a 300s TTL, while Django signals ensure cache invalidation on data changes—keeping the API fast and consistent.
+
+- **Comprehensive Test Suite**  
+  Over 100 unit & integration tests with 99% code coverage, guaranteeing stability and confidence in every release.
+
+- **Robust Business Logic**  
+  - Unique task names per user enforced at serialization time via custom validators.  
+  - Time range validation preventing `end_time <= start_time`.  
+  - Ownership validation using `IsObjectOwner` permission class and validators to secure resources.
+
+- **Security by Design**  
+  - Database-level constraints (`Meta.constraints`) for critical invariants.  
+  - UUID primary keys for unguessable resource identifiers.  
+  - Token-based authentication for all API endpoints.  
+  - Protection against N+1 queries through `select_related` and `prefetch_related`.
+
+- **Clean, Well-Documented API**  
+  - Full REST compliance with predictable URL patterns.  
+  - Swagger/OpenAPI docs with clear examples, pagination, filtering, and sorting out of the box.
+
+- **Modular, Scalable, and Testable Architecture**  
+  - Code organized into logical modules: mixins, filters, validators, signals, and helpers.  
+  - Reusable components follow SOLID & DRY principles.  
+  - Easy to extend and plug into new features.
+
+- **Containerized Multi-Service Setup**  
+  - Docker Compose orchestrates the web app, database, cache, and Celery workers.
+
+- **Agile-Friendly Repository**  
+  - Feature-branch workflow with clear Git history.  
+  - Detailed README with flow diagrams and usage examples.
+
