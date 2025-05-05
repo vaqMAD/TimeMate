@@ -19,7 +19,6 @@ Along the way, I deepened my understanding of:
 ## 🚀 Quick Start
 Choose one of the following methods to get **TimeMate** up and running:
 
----
 
 ### 1. From source with Docker Compose
 
