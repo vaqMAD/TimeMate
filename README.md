@@ -112,7 +112,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 ## ⭐ What Sets TimeMate Apart
 
 - **Intelligent Caching**  
-  `CacheListMixin` accelerates repeated list requests with a 300s TTL, while Django signals ensure cache invalidation on data changes—keeping the API fast and consistent.
+  `CacheListMixin` speeds up repetitive queries, and Django's signals make sure that after each change, the cached data is immediately invalidated - the API remains fast and consistent.
 
 - **Comprehensive Test Suite**  
   Over 100 unit & integration tests with 99% code coverage, guaranteeing stability and confidence in every release.
