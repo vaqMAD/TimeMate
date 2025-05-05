@@ -116,7 +116,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 - **Comprehensive Test Suite**  
   Over 100 unit & integration tests with 99% code coverage, guaranteeing stability and confidence in every release.
 
-- **Robust Business Logic**  
+- **Robust Business Logic - for example:**  
   - Unique task names per user enforced at serialization time via custom validators.  
   - Time range validation preventing `end_time <= start_time`.  
   - Ownership validation using `IsObjectOwner` permission class and validators to secure resources.
