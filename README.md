@@ -122,7 +122,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
   - Ownership validation using `IsObjectOwner` permission class and validators to secure resources.
 
 - **Security**  
-  - Database-level constraints (`Meta.constraints`) for critical invariants.  
+  - Database-level constraints (`Meta.constraints`) related for business logic.  
   - UUID primary keys for unguessable resource identifiers.  
   - Token-based authentication for all API endpoints.  
   - Protection against N+1 queries through `select_related` and `prefetch_related`.
@@ -137,9 +137,8 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
   - Easy to extend and plug into new features.
 
 - **Containerized Multi-Service Setup**  
-  - Docker Compose orchestrates the web app, database, cache, and Celery workers.
+  - Docker Compose orchestrates the web app, database and cache.
 
 - **Agile-Friendly Repository**  
   - Feature-branch workflow with clear Git history.  
-  - Detailed README with flow diagrams and usage examples.
 
