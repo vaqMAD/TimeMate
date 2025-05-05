@@ -1,4 +1,5 @@
 # Python imports
+import random
 import os
 from datetime import timedelta
 # Django imports
@@ -9,37 +10,27 @@ from rest_framework.authtoken.models import Token
 # Internal imports
 from Task.models import Task
 from TimeEntry.models import TimeEntry
+from .demo_tasks import DEMO_TASKS
 
 User = get_user_model()
 
 SUPERUSER_ENV_VARS = {
     'username': 'DJANGO_SUPERUSER_USERNAME',
-    'email':    'DJANGO_SUPERUSER_EMAIL',
+    'email': 'DJANGO_SUPERUSER_EMAIL',
     'password': 'DJANGO_SUPERUSER_PASSWORD',
-    'token':    'DJANGO_SUPERUSER_TOKEN',
+    'token': 'DJANGO_SUPERUSER_TOKEN',
 }
 
-DEMO_TASKS = [
-    {
-        'name': 'API Design',
-        'description': 'Design API endpoints and schema.',
-    },
-    {
-        'name': 'Serializer Implementation',
-        'description': 'Implement DRF serializers for Task and TimeEntry.',
-    },
-    {
-        'name': 'Unit Testing',
-        'description': 'Write unit tests for all key logic.',
-    },
-]
-NUM_DEMO_TASKS = 20           # Number of demo tasks to generate
-ENTRIES_PER_TASK = 5          # Number of time entries per task
-SEED_WINDOW_DAYS = 7          # Seed entries within the last week
-TIME_ENTRY_DURATION_HOURS = 1 # Duration of each entry in hours
+# Configuration for time entries
+ENTRIES_PER_TASK = 5  # Number of time entries per task
+MIN_ENTRY_DURATION_MINUTES = 10  # Minimum duration of an entry
+MAX_ENTRY_DURATION_MINUTES = 120  # Maximum duration of an entry
+SEED_WINDOW_DAYS = 7  # Seed entries within the last week
+
 
 class Command(BaseCommand):
     help = 'Seed the database with demo data for TimeMate.'
+
     def handle(self, *args, **options):
         """
         Entry point for seeding demo data:
@@ -82,6 +73,7 @@ class Command(BaseCommand):
             email=email,
             password=password,
         )
+
     def _create_token(self, user: User) -> Token:
         """
         Create or update an auth token for the given user.
@@ -101,17 +93,15 @@ class Command(BaseCommand):
 
     def _seed_tasks(self, owner: User) -> list:
         """
-        Seed the Task model with a sequence of demo tasks.
-        Returns a list of created or existing Task instances.
+        Seed the Task model using predefined DEMO_TASKS.
+        Returns a list of Task instances.
         """
         tasks = []
-        for i in range(1, NUM_DEMO_TASKS + 1):
-            name = f'Demo Task {i}'
-            description = f'Description for demo task {i}.'
+        for task_data in DEMO_TASKS:
             task, created = Task.objects.get_or_create(
-                name=name,
+                name=task_data['name'],
                 defaults={
-                    'description': description,
+                    'description': task_data['description'],
                     'owner': owner,
                 }
             )
@@ -123,28 +113,36 @@ class Command(BaseCommand):
     def _seed_time_entries(self, owner: User, tasks: list) -> None:
         """
         Seed the TimeEntry model for each Task with multiple entries.
+        Each entry has a random duration between MIN and MAX minutes.
         Entries are non-overlapping and distributed over the last week.
         """
         now = timezone.now()
         start_window = now - timedelta(days=SEED_WINDOW_DAYS)
-        duration = timedelta(hours=TIME_ENTRY_DURATION_HOURS)
 
         for task in tasks:
-            for entry_index in range(ENTRIES_PER_TASK):
-                # Calculate sequential, non-overlapping intervals
-                entry_start = start_window + entry_index * duration
+            current_start = start_window
+            for idx in range(ENTRIES_PER_TASK):
+                # Randomize duration
+                minutes = random.randint(
+                    MIN_ENTRY_DURATION_MINUTES,
+                    MAX_ENTRY_DURATION_MINUTES
+                )
+                duration = timedelta(minutes=minutes)
+
+                entry_start = current_start
                 entry_end = entry_start + duration
 
                 entry, created = TimeEntry.objects.get_or_create(
                     task=task,
                     owner=owner,
                     start_time=entry_start,
-                    defaults={
-                        'end_time': entry_end,
-                    }
+                    defaults={'end_time': entry_end},
                 )
                 status = 'Created' if created else 'Exists'
                 self.stdout.write(
-                    f'TimeEntry [{entry.start_time} - {entry_end}]  \n'  +
-                    f'for task "{task.name}": {status}'
+                    f'TimeEntry [{entry_start} - {entry_end}] ' \
+                    f'({minutes}min) for task "{task.name}": {status}'
                 )
+
+                # Move start forward to avoid overlap
+                current_start = entry_end
