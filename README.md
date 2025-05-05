@@ -28,22 +28,22 @@ Choose one of the following methods to get **TimeMate** up and running:
 ```bash
    git clone https://github.com/your-username/timemate.git
    cd timemate
- ```
+```
 2. Build and start containers:
- ```bash
+```bash
   docker compose up --build -d
- ```
+```
 --- 
 ### 2. From source with Docker Compose
-  1. Pull the latest image:
-  ```bash
+1. Pull the latest image:
+```bash
   docker pull vaqmadx/timemate:latest
-  ```
-  2. Run the container:
-  ```bash
+```
+2. Run the container:
+```bash
   docker run -d \
   --name timemate \
   -p 8000:8000 \
   vaqmadx/timemate:latest
-  ```
+```
   
