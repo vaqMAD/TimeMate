@@ -84,7 +84,7 @@ GET http://127.0.0.1:8000/time-entries/?ordering=-end_time&end_time_after=2025-0
 ```
 
 #### 🛠 Create Your Own Entries
-You can also post your own time entries. The app includes business logic validation — for example, if `end_time` is earlier than `start_time`, you’ll receive a clear error response:
+You can also post your own objects. The app includes business logic validation — for example, for time entries module if `end_time` is earlier than `start_time`, you’ll receive a clear error response:
 
 ```http
 POST http://127.0.0.1:8000/time-entries/
