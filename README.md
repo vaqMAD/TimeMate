@@ -121,7 +121,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
   - Time range validation preventing `end_time <= start_time`.  
   - Ownership validation using `IsObjectOwner` permission class and validators to secure resources.
 
-- **Security by Design**  
+- **Security**  
   - Database-level constraints (`Meta.constraints`) for critical invariants.  
   - UUID primary keys for unguessable resource identifiers.  
   - Token-based authentication for all API endpoints.  
