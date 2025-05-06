@@ -29,7 +29,7 @@ You can install and run the app using one of two methods:
 
 ### 1. Clone the Repository & Build with Docker Compose
 ```bash
-git clone https://github.com/vaqMAD/timemate.git
+git clone https://github.com/vaqMAD/TimeMate
 cd timemate
 docker compose up --build
 ```
