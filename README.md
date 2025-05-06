@@ -25,7 +25,7 @@ Along the way, I learned more about:
 
 ## 🛠️ Installation
 
-You can install and run the app using one of two methods:
+You can install and run the app using:
 
 ### 1. Clone the Repository & Build with Docker Compose
 ```bash
@@ -33,13 +33,6 @@ git clone https://github.com/vaqMAD/TimeMate
 cd timemate
 docker compose up --build
 ```
-
-### 2. Pull the Image from Docker Hub
-```bash
-docker pull vaqmadx/timemate
-docker run -p 8000:8000 vaqmadx/timemate
-```
-
 ---
 
 ## 🚀 Quick Start / Usage
