@@ -54,7 +54,7 @@ Visit the interactive docs at:
 
 ### 📡 Your First API Request
 
-Once your container is running, you can start interacting with the API. Here’s how:
+You can start interacting with the API. Here’s how:
 
 #### 🔐 Authenticate
 Add the following header to your requests in Postman, curl, or any HTTP client:
