@@ -104,34 +104,38 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 ## ⭐ What Sets TimeMate Apart
 
-- **Intelligent Caching**  
-  `CacheListMixin` speeds up repetitive queries, and Django's signals make sure that after each change, the cached data is immediately invalidated - the API remains fast and consistent. [Architecture diagram](https://i.imgur.com/ejYuZhe.png)
-- **Comprehensive Test Suite**  
-  Over 100 unit & integration tests with 99% code coverage, guaranteeing stability and confidence in every release.
+- **Intelligent View Caching**  
+  `CacheListMixin` + Django signals = automatic invalidation on change. Speeds up frequent queries without risking stale data. Reduces DB load in real use cases.
 
-- **Robust Business Logic - for example:**  
-  - Unique task names per user enforced at serialization time via custom validators.  
-  - Time range validation preventing `end_time <= start_time`.  
-  - Ownership validation using `IsObjectOwner` permission class and validators to secure resources.
+- **Testing: Real, Not Just for Show**  
+  +100 unit & integration tests, 99% coverage. Tests reflect real-world scenarios, e.g. authorization edge cases, time validation, ownership rules.
 
-- **Security**  
-  - Database-level constraints (`Meta.constraints`) related for business logic.  
-  - UUID primary keys for unguessable resource identifiers.  
-  - Token-based authentication for all API endpoints.  
-  - Protection against N+1 queries through `select_related` and `prefetch_related`.
+- **Solid Business Logic Implementation**  
+  - Unique task names per user – enforced via custom serializer validator  
+  - Time range validation – blocks `end_time <= start_time` at API layer  
+  - Object ownership logic – enforced both in views (`IsObjectOwner`) and serializer level  
+  - Reusable validation logic extracted to helper classes
 
-- **Clean, Well-Documented API**  
-  - Full REST compliance with predictable URL patterns.  
-  - Swagger/OpenAPI docs with clear examples, pagination, filtering, and sorting out of the box.
+- **Security by Design**  
+  - UUIDs as primary keys = safe from enumeration  
+  - DB-level constraints (`CheckConstraint`, `UniqueConstraint`) protect integrity  
+  - Token-based auth for all endpoints  
+  - Eliminated N+1 queries via `select_related` & `prefetch_related`
 
-- **Modular, Scalable, and Testable Architecture**  
-  - Code organized into logical modules: mixins, filters, validators, signals, and helpers.  
-  - Reusable components follow SOLID & DRY principles.  
-  - Easy to extend and plug into new features.
+- **API That Speaks Human**  
+  - Fully RESTful structure with intuitive endpoints  
+  - Automatic docs via DRF Spectacular (OpenAPI/Swagger)  
+  - Built-in pagination, filtering, ordering – with example queries
 
-- **Containerized Multi-Service Setup**  
-  - Docker Compose orchestrates the web app, database and cache.
+- **Modular Architecture Built for Growth**  
+  - Reusable components (Mixins, Validators, Signals, Filters, Permissions)  
+  - Based on **SOLID**, **KISS**, **DRY** principles  
+  - Each component: isolated, testable, easy to extend/maintain
 
-- **Agile-Friendly Repository**  
-  - Feature-branch workflow with clear Git history.  
+- **Ready for Production-like Workflow**  
+  - Full Docker Compose setup: API, DB (Postgres), Cache (Redis)  
+  - Consistent dev/prod parity
 
+- **Git Workflow You’d Want in a Team**  
+  - Feature branches with descriptive commits  
+  - Git-flow inspired structure for clean history & traceability
