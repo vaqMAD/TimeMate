@@ -2,7 +2,7 @@
 
 A lightweight, powerful and fully API-first backend for time tracking and task management, inspired by [Toggl.com's](https://toggl.com/) functionality.  
 Includes features such as intelligent caching, over 100 unit/integration tests, and a clean, modular architecture.
-> TL;DR: What Sets This Project Apart
+> TL;DR:
 > This isn't just another CRUD app. It's a **performance-driven** backend with intelligent caching, wrapped in a **bulletproof test suite** (99% coverage). The architecture is **clean, modular, and secure by design**, using best practices like SOLID, object-level permissions, and UUIDs. The whole thing is **fully containerized** with Docker for a zero-hassle, developer-friendly experience.
 ---
 
