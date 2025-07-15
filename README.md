@@ -105,10 +105,10 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 ## ⭐ What Sets TimeMate Apart
 
 - **Intelligent View Caching**  
-  `CacheListMixin` + Django signals = automatic invalidation on change. Speeds up frequent queries without risking stale data. Reduces DB load in real use cases.
+  `CacheListMixin` using `Redis` + Django signals = automatic invalidation on change. Speeds up frequent queries without risking stale data. Fast responses, happy database.
 
-- **Testing: Real, Not Just for Show**  
-  +100 unit & integration tests, 99% coverage. Tests reflect real-world scenarios, e.g. authorization edge cases, time validation, ownership rules.
+- **Bulletproof Testing: Real, Not Just for Show**  
+  +100 unit & integration tests, 99% coverage. Tests reflect real-world scenarios, e.g. authorization edge cases, time validation, ownership rules. This thing is built to be reliable.
 
 - **Solid Business Logic Implementation**  
   - Unique task names per user – enforced via custom serializer validator  
