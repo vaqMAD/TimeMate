@@ -140,8 +140,8 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
   - Feature branches with descriptive commits  
   - Git-flow inspired structure for clean history & traceability
  
-  ---
-  ## 🏗️ Architecture Overview
+---
+## 🏗️ Architecture Overview
 
 TimeMate is designed with **clean separation of concerns** and maintainability in mind.
 
@@ -157,12 +157,53 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 - **Tests** – Cover both unit (isolated logic) and integration (endpoints + DB)
 
 ### 🔁 Data Flow Example:
-1. 🧍 User makes a `POST /time-entries/`
-2. 🔐 Auth via Token
-3. 🔄 Serializer validates logic (time range, ownership, task uniqueness)
-4. ✅ Valid data hits Model → DB (PostgreSQL)
-5. ⚠️ Signal triggers → Cache invalidated
-6. 🔁 Next `GET /time-entries/` pulls fresh data → caches result
+1. User makes a `POST /time-entries/`
+2. Auth via Token
+3. Serializer validates logic (time range, ownership, task uniqueness)
+4. Valid data hits Model → DB (PostgreSQL)
+5. Signal triggers → Cache invalidated
+6. Next `GET /time-entries/` pulls fresh data → caches result
 
 > TL;DR: You write once, test once, and sleep peacefully ever after. 😴
 
+### 🗺️ High-Level Component Map:
+📦 TimeMate Project (Root)
+│
+├── 📁 TimeMate/                  # Django project's main directory
+│   ├── Utils/                    # Helper modules, the "toolbox"
+│   │   ├── mixins.py             # Mixins (e.g., OwnerRepresentationMixin, CacheListMixin)
+│   │   ├── pagination.py         # Default pagination configuration
+│   │   └── view_helpers.py       # Decorator s a nd helper functions for views
+│   ├── Permissions/
+│   │   └── owner_permissions.py  # Permission logic (e.g., IsObjectOwner)
+│   ├── Serializers/
+│   │   └── user_serializers.py   # Serializer for the User model
+│   ├── Signals/
+│   │   └── signals.py            # Signals for cache invalidation after model changes
+│   ├── Tests/
+│   │   ├── test_cache_and_signals.py # Integration tests for cache and signals
+│   │   ├── test_mixins.py        # Tests for mixins
+│   │   └── test_owner_permissions.py # Tests for permissions
+│   ├── settings.py               # Main project settings (DB, Cache, DRF)
+│   └── urls.py                   # Main project URLs (including Swagger)
+│
+├── 📁 Task/                     # Django app for Tasks
+│   ├── Tests/                    # Tests for the Task app
+│   ├── models.py                 # Task model with validators and DB constraints
+│   ├── serializers.py            # Serializers for Task (Create, Detail, List, Update)
+│   ├── validators.py             # Validators (e.g., unique task name per owner)
+│   ├── views.py                  # API views (ListCreate, RetrieveUpdateDestroy)
+│   └── urls.py                   # URLs for the Task app
+│
+├── 📁 TimeEntry/                # Django app for Time Entries
+│   ├── Tests/                    # Tests for the TimeEntry app
+│   ├── models.py                 # TimeEntry model with `duration` calculation logic
+│   ├── serializers.py            # Serializers for TimeEntry, including grouping ones
+│   ├── validators.py             # Validator for correct time range (start < end)
+│   ├── views.py                  # API views, including sorting and grouping
+│   └── urls.py                   # URLs for the TimeEntry app
+│
+├── docker-compose.yml            # Container configuration (API, Database, Cache)
+├── entrypoint.sh                 # Entrypoint script for the Docker container
+├── requirements.txt              # Python dependencies
+└── README.md                     # You are here ;)
