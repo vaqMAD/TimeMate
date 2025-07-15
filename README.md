@@ -139,3 +139,30 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 - **Git Workflow You’d Want in a Team**  
   - Feature branches with descriptive commits  
   - Git-flow inspired structure for clean history & traceability
+ 
+  ---
+  ## 🏗️ Architecture Overview
+
+TimeMate is designed with **clean separation of concerns** and maintainability in mind.
+
+### 📦 Layered Structure:
+- **Views / Endpoints** – Handle HTTP requests, auth, and basic orchestration
+- **Serializers** – Validate and transform data, enforce rules (e.g. unique task names)
+- **Custom Logic** – Isolated in reusable:
+  - **Mixins** – e.g. caching
+  - **Validators** – e.g. business rules for time ranges
+  - **Permissions** – e.g. ownership enforcement
+  - **Signals** – e.g. auto-invalidate cache after model save/delete
+- **Models** – Clean data layer with constraints (e.g. `CheckConstraint`, `UniqueConstraint`)
+- **Tests** – Cover both unit (isolated logic) and integration (endpoints + DB)
+
+### 🔁 Data Flow Example:
+1. 🧍 User makes a `POST /time-entries/`
+2. 🔐 Auth via Token
+3. 🔄 Serializer validates logic (time range, ownership, task uniqueness)
+4. ✅ Valid data hits Model → DB (PostgreSQL)
+5. ⚠️ Signal triggers → Cache invalidated
+6. 🔁 Next `GET /time-entries/` pulls fresh data → caches result
+
+> TL;DR: You write once, test once, and sleep peacefully ever after. 😴
+
