@@ -167,6 +167,7 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 > TL;DR: You write once, test once, and sleep peacefully ever after. 😴
 
 ### 🗺️ High-Level Component Map:
+```
 📦 TimeMate Project (Root)
 │
 ├── 📁 TimeMate/                  # Django project's main directory
@@ -207,3 +208,4 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 ├── entrypoint.sh                 # Entrypoint script for the Docker container
 ├── requirements.txt              # Python dependencies
 └── README.md                     # You are here ;)
+```
