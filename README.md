@@ -143,6 +143,8 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 ---
 ## 🏗️ Architecture Overview
 
+> TL;DR: You write once, test once, and sleep peacefully ever after. 😴
+
 TimeMate is designed with **clean separation of concerns** and maintainability in mind.
 
 ### 📦 Layered Structure:
@@ -163,8 +165,6 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 4. Valid data hits Model → DB (PostgreSQL)
 5. Signal triggers → Cache invalidated
 6. Next `GET /time-entries/` pulls fresh data → caches result
-
-> TL;DR: You write once, test once, and sleep peacefully ever after. 😴
 
 ### 🗺️ High-Level Component Map:
 ```
@@ -209,3 +209,4 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 ├── requirements.txt              # Python dependencies
 └── README.md                     # You are here ;)
 ```
+---
