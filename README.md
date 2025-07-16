@@ -145,7 +145,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
  
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 > TL;DR: You write once, test once, and sleep peacefully ever after. 😴
 
