@@ -21,7 +21,7 @@ Along the way, I learned more about:
 - Date format conversion (string ↔ Python/Django object)
 - Formatting datetime objects into desired formats
 
->Just want the highlights? If you're curious about the key features and architectural decisions, feel free to skip ahead to the **[What Sets TimeMate Apart](#-what-sets-timemate-apart)** section.
+>Just want the highlights? If you're curious about the key features and architectural decisions, feel free to skip ahead to the **[What Sets TimeMate Apart](#-what-sets-timemate-apart)** or **[Architecture Overview]**(#architecture-overview) section.
 ---
 
 ## 🛠️ Installation
