@@ -110,7 +110,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 - **Bulletproof Testing: Real, Not Just for Show**  
   +100 unit & integration tests, 99% coverage. Tests reflect real-world scenarios, e.g. authorization edge cases, time validation, ownership rules. This thing is built to be reliable.
 
-- **Solid Business Logic Implementation**  
+- **Solid Business Logic Implementation - examples:**  
   - Unique task names per user – enforced via custom serializer validator  
   - Time range validation – blocks `end_time <= start_time` at API layer  
   - Object ownership logic – enforced both in views (`IsObjectOwner`) and serializer level  
@@ -118,7 +118,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 - **Security by Design**  
   - UUIDs as primary keys = safe from enumeration  
-  - DB-level constraints (`CheckConstraint`, `UniqueConstraint`) protect integrity  
+  - DB-level business logic (`CheckConstraint`, `UniqueConstraint`) protects integrity  
   - Token-based auth for all endpoints  
   - Eliminated N+1 queries via `select_related` & `prefetch_related`
 
