@@ -2,21 +2,16 @@
 
 A lightweight, powerful and fully API-first backend for time tracking and task management, inspired by [Toggl.com's](https://toggl.com/) functionality.  
 > TL;DR:
-> This isn't just another CRUD app from tutorial. It's a **performance-driven** backend with intelligent caching, wrapped in a **bulletproof test suite** (99% coverage). The architecture is **clean, modular, and secure by design**, using best practices like SOLID, object-level permissions, and UUIDs. The whole thing is **fully containerized** with Docker for a zero-hassle, developer-friendly experience.
+> This isn't just another app from tutorial. It's a **performance-driven** backend with intelligent caching, wrapped in a **bulletproof test suite** (99% coverage). The architecture is **clean, modular, and secure by design**, using best practices like SOLID, object-level permissions, and UUIDs. The whole thing is **fully containerized** with Docker for a zero-hassle, developer-friendly experience.
 ---
 
 ## ❓ Why
 
 At the beginning of my programming journey, understanding how time-related operations work in code gave me quite a few headaches 😉.
-
 Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on specific tasks, and for self-motivation during coding sessions.
-
-So, I decided to turn that challenge into an opportunity and build my own API service, inspired by Toggl.com.
-
-That’s how **TimeMate** was born — a backend project that helped me organize my knowledge, apply best practices, and build something that actually works.
+So, I did the most logical thing: After questioning all my life choices that led me to this point, and briefly considering a career change to alpaca farming I built an entire API-first time tracking backend to finally make peace with it. This project is the result of that journey. Built from scratch, not a tutorial clone
 
 Along the way, I learned more about:
-
 - International time standards like **`ISO 8601`**
 - Date format conversion (string ↔ Python/Django object)
 - Formatting datetime objects into desired formats
