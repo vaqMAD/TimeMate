@@ -10,6 +10,7 @@ A lightweight, powerful and fully API-first backend for time tracking and task m
 At the beginning of my programming journey, understanding how time-related operations work in code gave me quite a few headaches 😉.
 Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on specific tasks, and for self-motivation during coding sessions.
 I was genuinely curious about how such tools are built, while also having the previosly mentioned issue constantly lingering in the back of my mind. 
+
 So, I did the most logical thing: After questioning all my life choices that led me to this point, and briefly considering a career change to alpaca farming I built an entire API-first time tracking backend to finally make peace with it. This project is the result of that journey. Built from scratch, not a tutorial clone
 
 Along the way, I learned more about:
