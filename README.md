@@ -49,7 +49,7 @@ Visit the interactive docs at:
 
 ---
 
-### 📡 Your First API Request
+### First API Request
 
 You can start interacting with the API. Here’s how:
 
