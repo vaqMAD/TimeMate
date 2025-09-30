@@ -7,7 +7,7 @@ A lightweight, powerful and fully API-first backend for time tracking and task m
 
 ## ❓ Why
 
-At the beginning of my programming journey, understanding how time-related operations work in code gave me quite a few headaches 😉.
+At the beginning of my programming journey, understanding how time-related operations work in code gave me quite a few headaches.
 Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on tasks, and for self-motivation during coding sessions.
 I was genuinely curious about how such tools are built, while also having the previosly mentioned issue constantly lingering in the back of my mind. 
 
