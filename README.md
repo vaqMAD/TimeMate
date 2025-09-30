@@ -53,13 +53,13 @@ Visit the interactive docs at:
 
 You can start interacting with the API. Here’s how:
 
-#### 🔐 Authenticate
+#### Authenticate
 Add the following header to your requests in Postman, curl, or any HTTP client:
 ```http
 Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 ```
 
-#### 📊 Explore Sample Data
+#### Explore Sample Data
 The application comes with demo data that you can explore right away by querying:
 
 - `GET http://127.0.0.1:8000/time-entries/sorted-by-date/`  
@@ -67,13 +67,13 @@ The application comes with demo data that you can explore right away by querying
 - `GET http://127.0.0.1:8000/time-entries/sorted-by-task-name/`  
   _View time entries sorted by task name_
 
-#### ⚙️ Filtering & Ordering
+#### Filtering & Ordering
 You can filter or sort time entries using query parameters (as documented in the schema). Example:
 ```http
 GET http://127.0.0.1:8000/time-entries/?ordering=-end_time&end_time_after=2025-04-29
 ```
 
-#### 🛠 Create Your Own Entries
+#### Create Your Own Entries
 You can also post your own objects. The app includes business logic validation — for example, for time entries module if `end_time` is earlier than `start_time`, you’ll receive a clear error response:
 
 ```http
@@ -101,13 +101,13 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 ---
 
-## ⭐ What Sets TimeMate Apart
+## What Sets TimeMate Apart ?
 
 - **Intelligent View Caching**  
   `CacheListMixin` using `Redis` + Django signals = automatic invalidation on change. Speeds up frequent queries without risking stale data. Fast responses, happy database.
 
-- **Bulletproof Testing: Real, Not Just for Show**  
-  +100 unit & integration tests, 99% coverage. Tests reflect real-world scenarios, e.g. authorization edge cases, time validation, ownership rules. This thing is built to be reliable.
+- **Testing:**  
+  +100 unit & integration tests, 99% coverage. Tests reflect real-world scenarios, e.g. authorization edge cases, time validation, ownership rules.
 
 - **Solid Business Logic Implementation - examples:**  
   - Unique task names per user – enforced via custom serializer validator  
@@ -143,7 +143,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 ## Architecture Overview
 
-> TL;DR: You write once, test once, and sleep peacefully ever after.
+> TL;DR: My philosphy is sipmple. You write once, test once, and sleep peacefully ever after.
 
 TimeMate is designed with **clean separation of concerns** and maintainability in mind.
 
