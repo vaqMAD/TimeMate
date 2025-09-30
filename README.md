@@ -1,8 +1,7 @@
 # 🕒 TimeMate – API-First Time Tracking Backend
 
 A lightweight, powerful and fully API-first backend for time tracking and task management, inspired by [Toggl.com's](https://toggl.com/) functionality.  
-> TL;DR:
-> This isn't just another app from tutorial. It's a **performance-driven** backend with intelligent caching, wrapped in a **bulletproof test suite** (99% coverage). The architecture is **clean, modular, and secure by design**, using best practices like SOLID, object-level permissions, and UUIDs. The whole thing is **fully containerized** with Docker for a zero-hassle, developer-friendly experience.
+
 ---
 
 ## ❓ Why
