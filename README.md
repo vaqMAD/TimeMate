@@ -1,6 +1,6 @@
-# 🕒 TimeMate – API-First Time Tracking Backend
+# 🕒 TimeMate – An API-First Time Tracking Backend
 
-A lightweight, powerful and fully API-first backend for time tracking and task management, inspired by [Toggl.com's](https://toggl.com/) functionality.  
+A RESTful API for time tracking built with Django REST Framework, Celery, PostgreSQL, and Redis, designed for reliability and maintainability.
 
 ---
 
