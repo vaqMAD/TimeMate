@@ -8,10 +8,10 @@ A lightweight, powerful and fully API-first backend for time tracking and task m
 ## ❓ Why
 
 At the beginning of my programming journey, understanding how time-related operations work in code gave me quite a few headaches 😉.
-Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on specific tasks, and for self-motivation during coding sessions.
+Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on tasks, and for self-motivation during coding sessions.
 I was genuinely curious about how such tools are built, while also having the previosly mentioned issue constantly lingering in the back of my mind. 
 
-So, I did the most logical thing: After questioning all my life choices that led me to this point, and briefly considering a career change to alpaca farming I built an entire API-first time tracking backend to finally make peace with it. This project is the result of that journey. Built from scratch, not a tutorial clone
+So, I did the most logical thing. After questioning all my life choices that led me to this point, and briefly considering a career change to alpaca farming I built an API-first time tracking backend to finally make peace with it. This project is the result of that journey. Built from scratch.
 
 Along the way, I learned more about:
 - International time standards like **`ISO 8601`**
@@ -144,11 +144,11 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 ## Architecture Overview
 
-> TL;DR: You write once, test once, and sleep peacefully ever after. 😴
+> TL;DR: You write once, test once, and sleep peacefully ever after.
 
 TimeMate is designed with **clean separation of concerns** and maintainability in mind.
 
-### 📦 Layered Structure:
+### Layered Structure:
 - **Views / Endpoints** – Handle HTTP requests, auth, and basic orchestration
 - **Serializers** – Validate and transform data, enforce rules (e.g. unique task names)
 - **Custom Logic** – Isolated in reusable:
@@ -159,7 +159,7 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 - **Models** – Clean data layer with constraints (e.g. `CheckConstraint`, `UniqueConstraint`)
 - **Tests** – Cover both unit (isolated logic) and integration (endpoints + DB)
 
-### 🔁 Data Flow Example:
+### Data Flow Example:
 1. User makes a `POST /time-entries/`
 2. Auth via Token
 3. Serializer validates logic (time range, ownership, task uniqueness)
@@ -167,11 +167,11 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 5. Signal triggers → Cache invalidated
 6. Next `GET /time-entries/` pulls fresh data → caches result
 
-### 🗺️ High-Level Component Map:
+### High-Level Component Map:
 ```
-📦 TimeMate Project (Root)
+TimeMate Project (Root)
 │
-├── 📁 TimeMate/                  # Django project's main directory
+├── TimeMate/                     # Django project's main directory
 │   ├── Utils/                    # Helper modules, the "toolbox"
 │   │   ├── mixins.py             # Mixins (e.g., OwnerRepresentationMixin, CacheListMixin)
 │   │   ├── pagination.py         # Default pagination configuration
@@ -189,7 +189,7 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 │   ├── settings.py               # Main project settings (DB, Cache, DRF)
 │   └── urls.py                   # Main project URLs (including Swagger)
 │
-├── 📁 Task/                     # Django app for Tasks
+├── Task/                         # Django app for Tasks
 │   ├── Tests/                    # Tests for the Task app
 │   ├── models.py                 # Task model with validators and DB constraints
 │   ├── serializers.py            # Serializers for Task (Create, Detail, List, Update)
@@ -197,7 +197,7 @@ TimeMate is designed with **clean separation of concerns** and maintainability i
 │   ├── views.py                  # API views (ListCreate, RetrieveUpdateDestroy)
 │   └── urls.py                   # URLs for the Task app
 │
-├── 📁 TimeEntry/                # Django app for Time Entries
+├── TimeEntry/                    # Django app for Time Entries
 │   ├── Tests/                    # Tests for the TimeEntry app
 │   ├── models.py                 # TimeEntry model with `duration` calculation logic
 │   ├── serializers.py            # Serializers for TimeEntry, including grouping ones
