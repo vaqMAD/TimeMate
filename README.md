@@ -143,7 +143,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 ## Architecture Overview
 
-> TL;DR: My philosphy is sipmple. You write once, test once, and sleep peacefully ever after.
+> TL;DR: My philosophy is sipmple. You write once, test once, and sleep peacefully ever after.
 
 TimeMate is designed with **clean separation of concerns** and maintainability in mind.
 
