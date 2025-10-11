@@ -145,6 +145,10 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 > TL;DR: My philosophy is sipmple. You write once, test once, and sleep peacefully ever after.
 
+**Important note** In this project I did not use any desing patter on purpose. Why ? Because the business logic is relatievly simple, and attempting to abstrac it away would lead to over-engineering and less readable code - in my opinion.
+
+Instead, I too more 'raw' approach, using predefined tools provided by Django/DRF - grouping them into logical modules, files, classes and functions.
+
 TimeMate is designed with **clean separation of concerns** and maintainability in mind.
 
 ### Layered Structure:
