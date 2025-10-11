@@ -1,6 +1,6 @@
 # 🕒 TimeMate – An API-First Time Tracking Backend
 
-A RESTful API for time tracking built with Django REST Framework, Celery, PostgreSQL, and Redis, designed for reliability and maintainability.
+A RESTful API for time tracking built with Django REST Framework, PostgreSQL, and Redis, designed for reliability and maintainability.
 
 ---
 
