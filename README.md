@@ -49,7 +49,7 @@ The container spins up with a pre-configured superuser for testing:
 
 ---
 
-### First Request Example
+### API Usage Example
 
 You can start interacting with the API. Here’s how:
 
@@ -122,7 +122,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
   - Eliminated N+1 queries via `select_related` & `prefetch_related`
 
 - **Clean Resful Api**  
-  - Fully RESTful structure with intuitive endpoints  
+  - Fully RESTful structure with intuitive endpoints 
   - Automatic docs via DRF Spectacular (OpenAPI/Swagger)  
   - Built-in pagination, filtering, ordering 
   
