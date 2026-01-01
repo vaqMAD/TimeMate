@@ -105,12 +105,12 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 ## What Sets TimeMate Apart ?
 
 - **Intelligent View Caching**  
-  `CacheListMixin` using `Redis` + Django signals = automatic invalidation on change. Speeds up frequent queries without risking stale data. Fast responses, happy database.
+  The system avoids hitting the database for frequent read operations. `CacheListMixin` using `Redis` + Django signals = automatic invalidation on change. Speeds up frequent queries without risking stale data. 
 
 - **Testing:**  
   +100 unit & integration tests, 99% coverage. Tests reflect real-world scenarios, e.g. authorization edge cases, time validation, ownership rules.
 
-- **Solid Business Logic Implementation - examples:**  
+- **Data Integrity - examples:**  
   - Unique task names per user – enforced via custom serializer validator  
   - Time range validation – blocks `end_time <= start_time` at API layer  
   - Object ownership logic – enforced both in views (`IsObjectOwner`) and serializer level  
@@ -122,23 +122,18 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
   - Token-based auth for all endpoints  
   - Eliminated N+1 queries via `select_related` & `prefetch_related`
 
-- **API That Speaks Human**  
+- **Clean Resful Api**  
   - Fully RESTful structure with intuitive endpoints  
   - Automatic docs via DRF Spectacular (OpenAPI/Swagger)  
-  - Built-in pagination, filtering, ordering – with example queries
-
-- **Modular Architecture Built for Growth**  
+  - Built-in pagination, filtering, ordering 
+  
+- **Modular Architecture**  
   - Reusable components (Mixins, Validators, Signals, Filters, Permissions)  
   - Based on **SOLID**, **KISS**, **DRY** principles  
   - Each component: isolated, testable, easy to extend/maintain
 
-- **Ready for Production-like Workflow**  
-  - Full Docker Compose setup: API, DB (Postgres), Cache (Redis)  
-  - Consistent dev/prod parity
-
-- **Git Workflow You’d Want in a Team**  
-  - Feature branches with descriptive commits  
-  - Git-flow inspired structure for clean history & traceability
+- **Workflow**  
+  - Full Docker Compose setup: API, DB, Cache  
  
 ---
 
@@ -150,14 +145,10 @@ Instead, I too more 'raw' approach, using predefined tools provided by Django/DR
 
 TimeMate is designed with **clean separation of concerns** and maintainability in mind.
 
-### Layered Structure:
-- **Views / Endpoints** – Handle HTTP requests, auth, and basic orchestration
-- **Serializers** – Validate and transform data, enforce rules (e.g. unique task names)
-- **Custom Logic** – Isolated in reusable:
-  - **Mixins** – e.g. caching
-  - **Validators** – e.g. business rules for time ranges
-  - **Permissions** – e.g. ownership enforcement
-  - **Signals** – e.g. auto-invalidate cache after model save/delete
+### Structure:
+- **Views / Endpoints** – Thin layer. Orchestrates request flow, delegates logic to Services/Mixins
+- **Serializers** – Responsible for validation and data sanitization. (e.g. unique task names)
+- **Utils/Mixins** Isolated, reusable logic (Caching, Permissions) following DRY/SOLID.
 - **Models** – Clean data layer with constraints (e.g. `CheckConstraint`, `UniqueConstraint`)
 - **Tests** – Cover both unit (isolated logic) and integration (endpoints + DB)
 
