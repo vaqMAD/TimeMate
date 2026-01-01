@@ -10,14 +10,14 @@ At the beginning of my programming journey, understanding how time-related opera
 Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on tasks, and for self-motivation during coding sessions.
 I was genuinely curious about how such tools are built, while also having the previosly mentioned issue constantly lingering in the back of my mind. 
 
-So, I did the most logical thing. After questioning all my life choices that led me to this point, and briefly considering a career change to alpaca farming, I decided to finally make peace with it. This project is the result of that journey. Built from scratch.
+So, I did the most logical thing. I decided to finally make peace with it. This project is the result of that journey. Built from scratch.
 
 Along the way, I learned more about:
 - International time standards like **`ISO 8601`**
 - Date format conversion (string ↔ Python/Django object)
 - Formatting datetime objects into desired formats
 
->**Just want the highlights?** If you're curious about the key features and architectural decisions, feel free to skip ahead to the **[What Sets TimeMate Apart](#-what-sets-timemate-apart)** or **[Architecture Overview](#architecture-overview)** section.
+>**Just want the highlights?** Skip ahead to **[What Sets TimeMate Apart](#-what-sets-timemate-apart)** or **[Architecture Overview](#architecture-overview)**.
 ---
 
 ##  Installation
@@ -42,14 +42,15 @@ Once the container is running, the app will be available at:
 Visit the interactive docs at:  
 `http://127.0.0.1:8000/api/schema/swagger-ui/`
 
-### 3. Superuser Credentials (for testing)
+### 3. Demo Credentials (for testing)
+The container spins up with a pre-configured superuser for testing:
 - **Username:** `admin@admin.com`
 - **Password:** `1234`
 - **Auth Token:** `9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b`
 
 ---
 
-### First API Request
+### First Request Example
 
 You can start interacting with the API. Here’s how:
 
