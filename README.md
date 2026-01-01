@@ -1,10 +1,10 @@
-# 🕒 TimeMate – An API-First Time Tracking Backend
+# TimeMate – An API-First Time Tracking Backend
 
 A RESTful API for time tracking built with Django REST Framework, PostgreSQL, and Redis, designed for reliability and maintainability.
 
 ---
 
-## ❓ Why
+##  Why ?
 
 At the beginning of my programming journey, understanding how time-related operations work in code gave me quite a few headaches.
 Around that time, I was heavily relying on time trackers — both at my previous job, where I measured time spent on tasks, and for self-motivation during coding sessions.
@@ -20,7 +20,7 @@ Along the way, I learned more about:
 >**Just want the highlights?** If you're curious about the key features and architectural decisions, feel free to skip ahead to the **[What Sets TimeMate Apart](#-what-sets-timemate-apart)** or **[Architecture Overview](#architecture-overview)** section.
 ---
 
-## 🛠️ Installation
+##  Installation
 
 You can install and run the app using:
 
@@ -32,7 +32,7 @@ docker compose up --build
 ```
 ---
 
-## 🚀 Quick Start / Usage
+## Quick Start / Usage
 
 ### 1. Access the App
 Once the container is running, the app will be available at:  
