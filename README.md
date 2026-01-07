@@ -139,7 +139,7 @@ Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
 
 ## Architecture Overview
 
-**Important note** In this project I did not use any desing patter on purpose. Why ? Because the business logic is relatievly simple, and attempting to abstrac it away would lead to over-engineering and less readable code - in my opinion.
+**Important note** In this project I did not use any desing pattern on purpose. Why ? Because the business logic is relatively simple, and attempting to abstract it away would lead to over-engineering and less readable code - in my opinion.
 
 Instead, I too more 'raw' approach, using predefined tools provided by Django/DRF - grouping them into logical modules, files, classes and functions.
 
